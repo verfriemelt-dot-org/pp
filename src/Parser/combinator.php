@@ -2,7 +2,7 @@
 
     function choice( Parser ... $parsers ): Parser {
 
-        return new Parser( 'choice', function ( \ParserInput $input, \ParserState $state ) use ( &$parsers ): \ParserState {
+        return new Parser( 'choice', function ( \ParserInputInterface $input, \ParserState $state ) use ( &$parsers ): \ParserState {
 
                 foreach ( $parsers as $parser ) {
 
@@ -18,7 +18,7 @@
 
     function sequenceOf( Parser ... $parsers ): Parser {
 
-        return new Parser( 'choice', function ( \ParserInput $input, \ParserState $state ) use ( &$parsers ): \ParserState {
+        return new Parser( 'choice', function ( \ParserInputInterface $input, \ParserState $state ) use ( &$parsers ): \ParserState {
 
                 if ( $state->isError() ) {
                     return $state;
@@ -39,7 +39,7 @@
     }
 
     function many( Parser $parser ) {
-        return new Parser( 'many', function ( \ParserInput $input, \ParserState $state ) use ( &$parser ): \ParserState {
+        return new Parser( 'many', function ( \ParserInputInterface $input, \ParserState $state ) use ( &$parser ): \ParserState {
 
                 $results = [];
                 $isDone  = false;
@@ -63,7 +63,7 @@
     }
 
     function manyOne( Parser $parser ) {
-        return new Parser( 'many', function ( \ParserInput $input, \ParserState $state ) use ( &$parser ): \ParserState {
+        return new Parser( 'many', function ( \ParserInputInterface $input, \ParserState $state ) use ( &$parser ): \ParserState {
 
                 $results = [];
                 $isDone  = false;
@@ -91,7 +91,7 @@
     }
 
     function seperatedBy( Parser $seperator ): \Closure {
-        return fn ( Parser $value ) => new Parser( 'seperatered',function ( \ParserInput $input, \ParserState $state ) use ( &$value, &$seperator ): \ParserState {
+        return fn ( Parser $value ) => new Parser( 'seperatered',function ( \ParserInputInterface $input, \ParserState $state ) use ( &$value, &$seperator ): \ParserState {
 
                 $results = [];
 
@@ -131,7 +131,7 @@
     }
 
     function lazy( $lazy ) {
-        return new Parser( 'lazy', function ( ParserInput $input, ParserState $state ) use ( &$lazy ) : ParserState {
+        return new Parser( 'lazy', function ( ParserInputInterface $input, ParserState $state ) use ( &$lazy ) : ParserState {
                 return $lazy()->run( $input, $state );
             } );
     }

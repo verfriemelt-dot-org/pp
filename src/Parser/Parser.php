@@ -11,21 +11,13 @@
             $this->parser = $parser;
         }
 
-        public function run( ParserInput $input, ParserState $state ): ParserState {
-
-
-//            print_r( $this->label . PHP_EOL );
-//            print_r( $state->getResult()  );
-//            print_r( $state->getError()  );
-//            echo  PHP_EOL;
-//            usleep(50000);
-
+        public function run( ParserInputInterface $input, ParserState $state ): ParserState {
             return ($this->parser)( $input, $state );
         }
 
         public function map( Closure $callable ): Parser {
 
-            return new static( 'map', function ( ParserInput $input, ParserState $state ) use ( &$callable ): ParserState {
+            return new static( 'map', function ( ParserInputInterface $input, ParserState $state ) use ( &$callable ): ParserState {
 
                     $state = $this->run( $input, $state );
 
@@ -39,7 +31,7 @@
 
         public function mapError( Closure $callable ): Parser {
 
-            return new static( 'mapError', function ( ParserInput $input, ParserState $state ) use ( &$callable ): ParserState {
+            return new static( 'mapError', function ( ParserInputInterface $input, ParserState $state ) use ( &$callable ): ParserState {
 
                     $state = $this->run( $input, $state );
 
@@ -51,9 +43,9 @@
                 } );
         }
 
-        public function chain( array $cases ): Parser {
+        public function chain( $callback ): Parser {
 
-            return new static( 'chain', function ( ParserInput $input, ParserState $state ) use ( &$cases ): ParserState {
+            return new static( 'chain', function ( ParserInputInterface $input, ParserState $state ) use ( $callback ): ParserState {
 
                     $state = $this->run( $input, $state );
 
@@ -61,7 +53,24 @@
                         return $state;
                     }
 
-                    return $cases[$state->getResult()]?->run( $input, $state );
+                    $next = $callback( $state );
+
+                    if ( $next === null ) {
+                        return $state;
+                    }
+
+                    $nextState = $next->run( $input, $state );
+
+                    if ( $nextState->isError() ) {
+                        return $nextState;
+                    }
+
+                    $results = array_merge(
+                        $state->getResult(),
+                        $nextState->getResult()
+                    );
+
+                    return $nextState->result( $results );
                 } );
         }
 
