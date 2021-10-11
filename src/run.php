@@ -3,7 +3,7 @@
     // load parser
     array_map( fn( $file ) => require_once( $file ), glob( __DIR__ . '/Parser/**.php' ) );
 
-    $file = '/usr/bin/false';
+    $file = $argv[1];
 
     $filesize = filesize( $file );
     $fp       = fopen( $file, 'rb' );
@@ -25,7 +25,7 @@
             uint( 8 )->map( fn( $i ) => chr( $i ) ),
             uint( 8 )->map( fn( $i ) => chr( $i ) ),
             uint( 8 )->map( fn( $i ) => chr( $i ) ),
-        )->map( $tag( "header" ) ),
+        )->map(fn ($i) => implode($i))->map( $tag( "header" ) ),
         uint( 8 )->map( fn( $i ) => $i === 1 ? '32bit' : '64bit' )->map( $tag( 'plattform' ) ),
         uint( 8 )->map( fn( $i ) => $i === 1 ? 'little endian' : 'big endian' )->map( $tag( 'endianess' ) ),
         uint( 8 )->map( $tag( 'version' ) ),
@@ -121,5 +121,5 @@
         ->map( $flatTags )
     ;
 
-    print_r( $parser->run( $input, new ParserState ) );
+    print_r( $parser->run( $input, new ParserState )->getResult() );
 
