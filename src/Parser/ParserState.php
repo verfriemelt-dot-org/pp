@@ -46,4 +46,8 @@
             return new self( $this->getIndex(), $this->result, true, $error );
         }
 
+        public function getError(): ?string {
+            return $this->error;
+        }
+
     }

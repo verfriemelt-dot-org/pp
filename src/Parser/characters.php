@@ -37,26 +37,49 @@
     }
 
     function digit( $expectedCharacters = [
-           "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"
+            "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"
         ] ): Parser {
 
         return choice( ... array_map( fn( $_ ) => char( $_ ), $expectedCharacters ) );
     }
 
     function punctuation( $expectedCharacters = [
-           "!", "?", ".", ","
+            "!", "?", ".", ","
         ] ): Parser {
 
         return choice( ... array_map( fn( $_ ) => char( $_ ), $expectedCharacters ) );
     }
 
     function space( $expectedCharacters = [
-           " ", "\n"
+            " ", "\n"
         ] ): Parser {
 
         return choice( ... array_map( fn( $_ ) => char( $_ ), $expectedCharacters ) );
     }
 
-    function string() {
+    function letters(): Parser {
         return many( letter() )->map( fn( $i ) => implode( $i ) );
     }
+
+    function numbers(): Parser {
+        return manyOne( digit() )->map( fn( $i ) => implode( $i ) );
+    }
+
+    function string( string $string ): Parser {
+
+        return new Parser( 'string', function ( ParserInput $input, ParserState $state ) use ( &$string ): ParserState {
+
+                $input = $input->getFromOffset( $state->getIndex(), strlen($string) );
+
+                if ( null === $input ) {
+                    return $state->error( "unexpected end of input" );
+                }
+
+                if ( $input === $string ) {
+                    return $state->result( $string )->incrementIndex( strlen($string) );
+                } else {
+                    return $state->error( "unexpected string at position {$state->getIndex()}" );
+                }
+            } );
+    }
+
