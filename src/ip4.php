@@ -3,7 +3,7 @@
     // load parser
     array_map( fn( $file ) => require_once( $file ), glob( __DIR__ . '/Parser/**.php' ) );
 
-    $file = 'packet.bin';
+    $file = '../packet.bin';
 
     $filesize = filesize( $file );
     $fp       = fopen( $file, 'rb' );

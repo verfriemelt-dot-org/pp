@@ -47,30 +47,19 @@
 
             return new static( 'chain', function ( ParserInputInterface $input, ParserState $state ) use ( $callback ): ParserState {
 
-                    $state = $this->run( $input, $state );
-
-                    if ( $state->isError() ) {
-                        return $state;
-                    }
-
-                    $next = $callback( $state );
-
-                    if ( $next === null ) {
-                        return $state;
-                    }
-
-                    $nextState = $next->run( $input, $state );
+                    $nextState = $this->run( $input, $state );
 
                     if ( $nextState->isError() ) {
                         return $nextState;
                     }
 
-                    $results = array_merge(
-                        $state->getResult(),
-                        $nextState->getResult()
-                    );
+                    $nextParser = $callback( $nextState->getResult() );
 
-                    return $nextState->result( $results );
+                    if ( ! ($nextParser instanceof Parser) ) {
+                        throw new Exception('chain: callbacks must return a parser');
+                    }
+
+                    return $nextParser->run( $input, $nextState );
                 } );
         }
 

@@ -10,14 +10,14 @@
 
                 $chr = $input->getFromOffset( $state->getIndex(), 1 );
 
-                if ( null === $chr ) {
-                    return $state->error( "unexpected end of input" );
+                if ( '' === $chr ) {
+                    return $state->error( "char: unexpected end of input" );
                 }
 
                 if ( $chr === $char ) {
                     return $state->result( $chr )->incrementIndex( 1 );
                 } else {
-                    return $state->error( "unexpected character at position {$state->getIndex()}" );
+                    return $state->error( "char: unexpected character {$chr}, expected {$char} at position {$state->getIndex()}" );
                 }
             } );
     }
