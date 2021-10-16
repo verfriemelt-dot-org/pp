@@ -1,13 +1,13 @@
-<?php
+<?php declare( strict_types = 1 );
 
     final class Parser {
 
-        private $parser;
+        private Closure $parser;
 
         private string $label = '';
 
         public function __construct( string $label, \Closure $parser ) {
-            $this->label( $label );
+            $this->label = $label;
             $this->parser = $parser;
         }
 
@@ -17,9 +17,11 @@
 
         public function map( Closure $callable ): Parser {
 
-            return new static( 'map', function ( ParserInputInterface $input, ParserState $state ) use ( &$callable ): ParserState {
+            $parser = $this->parser;
 
-                    $state = $this->run( $input, $state );
+            return new static( 'map', static function ( ParserInputInterface $input, ParserState $state ) use ( $callable, $parser ): ParserState {
+
+                    $state = $parser( $input, $state );
 
                     if ( $state->isError() ) {
                         return $state;
@@ -31,9 +33,11 @@
 
         public function mapError( Closure $callable ): Parser {
 
-            return new static( 'mapError', function ( ParserInputInterface $input, ParserState $state ) use ( &$callable ): ParserState {
+            $parser = $this->parser;
 
-                    $state = $this->run( $input, $state );
+            return new static( 'mapError', static function ( ParserInputInterface $input, ParserState $state ) use ( $callable, $parser  ): ParserState {
+
+                    $state = $parser( $input, $state );
 
                     if ( !$state->isError() ) {
                         return $state;
@@ -43,11 +47,13 @@
                 } );
         }
 
-        public function chain( $callback ): Parser {
+        public function chain( Closure $callback ): Parser {
 
-            return new static( 'chain', function ( ParserInputInterface $input, ParserState $state ) use ( $callback ): ParserState {
+            $parser = $this->parser;
 
-                    $nextState = $this->run( $input, $state );
+            return new static( 'chain', static function ( ParserInputInterface $input, ParserState $state ) use ( $callback, $parser ): ParserState {
+
+                    $nextState = $parser( $input, $state );
 
                     if ( $nextState->isError() ) {
                         return $nextState;

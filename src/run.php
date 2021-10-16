@@ -25,39 +25,7 @@
         string( 'STRING' ),
     );
 
-    function succeed( $value ): Parser {
-        return new Parser( 'succeed', static fn ( ParserInput $input, ParserState $state ): ParserState => $state->result($value) );
-    }
-
-    function fail( $msg ): Parser {
-        return new Parser( 'succeed', static fn ( ParserInput $input, ParserState $state ): ParserState => $state->error( $msg ) );
-    }
-
-    function contextual( $generator ) {
-        return fn($i) => succeed(null)->chain(function () use ( $generator,$i ) {
-
-            $iterator = null;
-
-            $step = function ( $nextValue = null ) use (&$step, &$iterator, &$generator) {
-
-                if ( $iterator === null ) {
-                    $iterator = $generator();
-                    $parser = $iterator->current();
-                } else {
-                    $parser = $iterator->send( $nextValue );
-                }
-
-
-                if ( !$iterator->valid() ) {
-                    return succeed( $nextValue );
-                }
-
-                return $parser->chain($step);
-            };
-
-            return $step();
-        });
-    }
+    
 
 //    print_r( $parser->run( new ParserInput( $example1 ), new ParserState ) );
 

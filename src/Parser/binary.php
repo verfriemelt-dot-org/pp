@@ -1,4 +1,4 @@
-<?php
+<?php declare( strict_types = 1 );
 
     function bit(): Parser {
         return new Parser( 'char', function ( ParserBinaryInput $input, ParserState $state ): ParserState {
