@@ -1,13 +1,22 @@
 <?php
 
-    array_map( fn( $file ) => require_once( $file ), glob( __DIR__ . '/Parser/**.php' ) );
+    use \verfriemelt\pp\Parser\ParserInput;
+    use \verfriemelt\pp\Parser\ParserState;
+    use function \verfriemelt\pp\Parser\functions\between;
+    use function \verfriemelt\pp\Parser\functions\char;
+    use function \verfriemelt\pp\Parser\functions\choice;
+    use function \verfriemelt\pp\Parser\functions\lazy;
+    use function \verfriemelt\pp\Parser\functions\numbers;
+    use function \verfriemelt\pp\Parser\functions\sequenceOf;
+
+require __DIR__ . "/../vendor/autoload.php";
 
     $inBrackets = between( char( '(' ), char( ')' ) );
 
     $numberParser = numbers()->map( fn( $i ) => [
             'type'  => 'number',
             'value' => $i
-        ] )->label( 'number' );
+            ] )->label( 'number' );
 
     $operator = choice(
         char( "+" ),

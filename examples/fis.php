@@ -71,48 +71,117 @@
     $reponseSize = sequenceOf( numbers(), space() )->map( $take( 0 ) );
 
     $tickeos = string( 'TICKeos' )
-        ->chain( contextual( function () use ($bracketed, $take ) {
+        ->chain( contextual( function () use ( $bracketed, $take ) {
 
             yield char( '/' );
 
             $version = yield sequenceOf( numbers(), char( '.' ), numbers() )->map( fn( $i ) => implode( '', $i ) );
 
-            yield manyOne(space());
+            if ( $version === '2021.02' ) {
 
-            [ $commitHash, $commitDate ] = yield
-            $bracketed(
-                sequenceOf(
-                    many(choice(letters(), numbers() ) )->map(fn($i) => implode('', $i)),
-                    char(';'), space(),
-                    sequenceOf( numbers(), char('-'), numbers(), char('-'), numbers() )->map(fn($i) => implode('',$i))
-                )->map( $take(0,3) )
+                $rest = yield regexp( '[^"]*' );
+
+                yield succeed( [
+                        'isTickeos'  => true,
+                        'version'    => $version,
+                        'commitHash' => null,
+                        'commitDate' => null,
+                        'rest'       => $rest,
+                        'customer'   => 'MDV'
+                    ] );
+
+                return;
+            }
+
+            yield manyOne( space() );
+
+            [$commitHash, $commitDate] = yield
+                $bracketed(
+                    sequenceOf(
+                        many( choice( letters(), numbers() ) )->map( fn( $i ) => implode( '', $i ) ),
+                        char( ';' ), space(),
+                        sequenceOf( numbers(), char( '-' ), numbers(), char( '-' ), numbers() )->map( fn( $i ) => implode( '', $i ) )
+                    )->map( $take( 0, 3 ) )
             );
 
-            yield manyOne(space());
+            yield manyOne( space() );
 
             $customerInfo = yield $bracketed(
                     sequenceOf(
-                        manyOne(letters()),
-                        choice(space(), char('-'), char('/')),
+                        manyOne( choice( letters(), numbers() ) )->map( fn( $i ) => implode( '', $i ) ),
+                        choice( space(), char( '-' ), char( '/' ) ),
                         regexp( '[^\)]*' )
-                    )->map( $take(0))
-                )->map( $take(0));
+                    )
+                )->map( $take( 0 ) );
+
+            if ( $customerInfo === 'Tickets' ) {
+                $customerInfo = 'VRS,VRR,NRW';
+            }
 
             $rest = yield regexp( '[^"]*' );
 
             yield succeed( [
-                    'isTickeos' => true,
-                    'version'   => $version,
+                    'isTickeos'  => true,
+                    'isLib'      => false,
+                    'version'    => $version,
                     'commitHash' => $commitHash,
                     'commitDate' => $commitDate,
+                    'rest'       => $rest,
+                    'customer'   => $customerInfo
+                ] );
+        } ) );
+
+    $libParser = succeed( null )->chain( contextual( function ()use ( $bracketed, $take ) {
+
+            $customerInfo = yield manyOne(
+                    choice(
+                        char( "." ),
+                        char( "-" ),
+                        letters(),
+                        numbers(),
+                    )
+                )->map( fn( $i ) => array_pop( $i ) );
+
+            yield char( '/' );
+
+            $version = yield manyOne( choice( numbers(), char( '.' ) ) )->map( fn( $i ) => implode( '', $i ) );
+
+            yield space();
+
+            $rest = yield regexp( '[^"]*' );
+
+//        $plattform = yield $bracketed( letters() );
+
+            yield succeed( [
+                    'isTickeos' => true,
+                    'isLib'     => true,
+                    'version'   => $version,
+                    'customer'  => $customerInfo,
                     'rest'      => $rest,
-                    'customer'      => $customerInfo
+                ] );
+        } ) );
+
+    $java = string( 'Java' )->chain( contextual( function () {
+
+            yield char( '/' );
+
+            $version = yield manyOne( choice( numbers(), char( '.' ), char( "_" ) ) )->map( fn( $i ) => implode( '', $i ) );
+            $rest    = yield regexp( '[^"]*' );
+
+            yield succeed( [
+                    'isTickeos' => true,
+                    'isLib'     => true,
+                    'version'   => "java",
+                    'customer'  => 'java',
+                    'rest'      => $rest,
                 ] );
         } ) );
 
     $client = $quoted(
         choice(
             $tickeos,
+            $libParser,
+            $java,
             regexp( '[^"]*' )->map( fn( $i ) => [
                 'isTickeos' => false,
                 'rest'      => $i

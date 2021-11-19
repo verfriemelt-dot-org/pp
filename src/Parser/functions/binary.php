@@ -1,10 +1,18 @@
-<?php declare( strict_types = 1 );
+<?php
+
+    declare( strict_types = 1 );
+
+    namespace verfriemelt\pp\Parser\functions;
+
+    use \verfriemelt\pp\Parser\Parser;
+    use \verfriemelt\pp\Parser\ParserBinaryInput;
+    use \verfriemelt\pp\Parser\ParserState;
 
     function bit(): Parser {
-        return new Parser( 'char', function ( ParserBinaryInput $input, ParserState $state ): ParserState {
+        return new Parser( 'char', static function ( ParserBinaryInput $input, ParserState $state ): ParserState {
 
-                $byteOffset = floor( $state->getIndex() / 8 );
-                $bitOffset  = 7 - $state->getIndex() % 8;
+                $byteOffset = (int) floor( $state->getIndex() / 8 );
+                $bitOffset  = (7 - $state->getIndex() % 8);
 
                 $byte = $input->getFromOffset( $byteOffset, 1 );
 
@@ -19,9 +27,9 @@
     }
 
     function zero(): Parser {
-        return new Parser( 'char', function ( ParserBinaryInput $input, ParserState $state ): ParserState {
+        return new Parser( 'char', static function ( ParserBinaryInput $input, ParserState $state ): ParserState {
 
-                $byteOffset = floor( $state->getIndex() / 8 );
+                $byteOffset = (int) floor( $state->getIndex() / 8 );
                 $bitOffset  = 7 - $state->getIndex() % 8;
 
                 $byte = $input->getFromOffset( $byteOffset, 1 );
@@ -41,9 +49,9 @@
     }
 
     function one(): Parser {
-        return new Parser( 'char', function ( ParserBinaryInput $input, ParserState $state ): ParserState {
+        return new Parser( 'char', static function ( ParserBinaryInput $input, ParserState $state ): ParserState {
 
-                $byteOffset = floor( $state->getIndex() / 8 );
+                $byteOffset = (int) floor( $state->getIndex() / 8 );
                 $bitOffset  = 7 - $state->getIndex() % 8;
 
                 $byte = $input->getFromOffset( $byteOffset, 1 );
@@ -64,10 +72,10 @@
 
     function uint( int $n ): Parser {
         return
-                sequenceOf( array_fill( 1, $n, bit() ) )
-                ->map( fn( $i ) => bindec( implode( "", $i ) ) );
+                sequenceOf( ... array_fill( 1, $n, bit() ) )
+                ->map( static fn( $i ) => bindec( implode( "", $i ) ) );
     }
 
     function rawString( string $string ): Parser {
-        return array_map( fn( $c ) => uint( 8 ), str_split( $string ) );
+        return sequenceOf( ... array_map( static fn( string $c ) => uint( 8 ), str_split( $string ) ) );
     }

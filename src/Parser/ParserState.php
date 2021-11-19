@@ -1,10 +1,14 @@
-<?php declare( strict_types = 1 );
+<?php
+
+    declare( strict_types = 1 );
+
+    namespace verfriemelt\pp\Parser;
 
     class ParserState {
 
         private int $index = 0;
 
-        private $result;
+        private mixed $result;
 
         private bool $isError = false;
 
@@ -42,7 +46,7 @@
             return new self( $this->getIndex(), $result, $this->isError(), $this->error );
         }
 
-        public function error( mixed $error ): ParserState {
+        public function error( string $error ): ParserState {
             return new self( $this->getIndex(), $this->result, true, $error );
         }
 

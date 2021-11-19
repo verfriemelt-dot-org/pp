@@ -1,26 +1,34 @@
-<?php declare( strict_types = 1 );
+<?php
 
-    function regexp( $pattern ): Parser {
+    declare( strict_types = 1 );
 
-        return new Parser( 'regex', function ( ParserInput $input, ParserState $state ) use ( &$pattern ): ParserState {
+    namespace verfriemelt\pp\Parser\functions;
 
-                if ( preg_match( "~($pattern)~", $input->getFromOffset( $state->getIndex(), $input->getLength() ), $hits ) ) {
+    use \RuntimeException;
+    use \verfriemelt\pp\Parser\Parser;
+    use \verfriemelt\pp\Parser\ParserInput;
+    use \verfriemelt\pp\Parser\ParserState;
 
-                    return $state->result( $hits[1] )->incrementIndex( strlen($hits[1]));
+    function regexp( string $pattern ): Parser {
 
+        return new Parser( 'regex', static function ( ParserInput $input, ParserState $state ) use ( &$pattern ): ParserState {
+
+                if ( (bool) preg_match( "~($pattern)~", $input->getFromOffset( $state->getIndex(), $input->getLength() ), $hits ) ) {
+
+                    return $state->result( $hits[1] )->incrementIndex( strlen( $hits[1] ) );
                 }
 
                 return $state->error( "regex: could not match with {$pattern} beginning from position {$state->getIndex()}" );
             } );
     }
 
-    function char( $char ): Parser {
+    function char( string $char ): Parser {
 
         if ( strlen( $char ) > 1 ) {
-            throw new Expcetion( 'illegal char' );
+            throw new RuntimeException( 'illegal char' );
         }
 
-        return new Parser( 'char', function ( ParserInput $input, ParserState $state ) use ( &$char ): ParserState {
+        return new Parser( 'char', static function ( ParserInput $input, ParserState $state ) use ( &$char ): ParserState {
 
                 $chr = $input->getFromOffset( $state->getIndex(), 1 );
 
@@ -40,22 +48,22 @@
         return regexp( "^[a-zA-Z]{1}" );
     }
 
-    function digit() {
+    function digit(): Parser {
         return regexp( "^[0-9]{1}" );
     }
 
-    function punctuation( $expectedCharacters = [
+    function punctuation( array $expectedCharacters = [
             "!", "?", ".", ",", "/", '-'
         ] ): Parser {
 
-        return choice( ... array_map( fn( $_ ) => char( $_ ), $expectedCharacters ) );
+        return choice( ... array_map( static fn( $_ ) => char( $_ ), $expectedCharacters ) );
     }
 
-    function space( $expectedCharacters = [
+    function space( array $expectedCharacters = [
             " ", "\n"
         ] ): Parser {
 
-        return choice( ... array_map( fn( $_ ) => char( $_ ), $expectedCharacters ) );
+        return choice( ... array_map( static fn( $_ ) => char( $_ ), $expectedCharacters ) );
     }
 
     function letters(): Parser {
@@ -68,11 +76,11 @@
 
     function string( string $string ): Parser {
 
-        return new Parser( 'string', function ( ParserInput $input, ParserState $state ) use ( &$string ): ParserState {
+        return new Parser( 'string', static function ( ParserInput $input, ParserState $state ) use ( &$string ): ParserState {
 
                 $input = $input->getFromOffset( $state->getIndex(), strlen( $string ) );
 
-                if ( null === $input ) {
+                if ( strlen($input) === 0 ) {
                     return $state->error( "unexpected end of input" );
                 }
 

@@ -2,23 +2,26 @@
 
     declare(strict_types = 1);
 
-    use PHPUnit\Framework\TestCase;
+    namespace tests\unit;
+
+    use \PHPUnit\Framework\TestCase;
+    use \verfriemelt\pp\Parser\ParserState;
 
     final class ParserStateTest
     extends TestCase {
 
-        public function testCreateInstance() {
+        public function testCreateInstance(): void {
             $this->expectNotToPerformAssertions();
             new ParserState();
         }
 
-        public function testUpdateState() {
+        public function testUpdateState(): void {
 
-            $parser = new ParserState();
-            $newParser = $parser->incrementIndex(5);
+            $parser    = new ParserState();
+            $newParser = $parser->incrementIndex( 5 );
 
-            $this->assertSame(5, $newParser->getIndex(), 'new state 5');
-            $this->assertSame(0, $parser->getIndex(), 'old state still 0');
-
+            static::assertSame( 5, $newParser->getIndex(), 'new state 5' );
+            static::assertSame( 0, $parser->getIndex(), 'old state still 0' );
         }
+
     }

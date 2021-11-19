@@ -1,7 +1,13 @@
 <?php
 
-    // load parser
-    array_map( fn( $file ) => require_once( $file ), glob( __DIR__ . '/Parser/**.php' ) );
+    use \verfriemelt\pp\Parser\ParserBinaryInput;
+    use \verfriemelt\pp\Parser\ParserState;
+    use function \verfriemelt\pp\Parser\functions\sequenceOf;
+    use function \verfriemelt\pp\Parser\functions\uint;
+    use function \verfriemelt\pp\Parser\functions\zero;
+
+// load parser
+    require __DIR__ . "/../vendor/autoload.php";
 
     $file = $argv[1];
 
@@ -25,7 +31,7 @@
             uint( 8 )->map( fn( $i ) => chr( $i ) ),
             uint( 8 )->map( fn( $i ) => chr( $i ) ),
             uint( 8 )->map( fn( $i ) => chr( $i ) ),
-        )->map(fn ($i) => implode($i))->map( $tag( "header" ) ),
+        )->map( fn( $i ) => implode( $i ) )->map( $tag( "header" ) ),
         uint( 8 )->map( fn( $i ) => $i === 1 ? '32bit' : '64bit' )->map( $tag( 'plattform' ) ),
         uint( 8 )->map( fn( $i ) => $i === 1 ? 'little endian' : 'big endian' )->map( $tag( 'endianess' ) ),
         uint( 8 )->map( $tag( 'version' ) ),

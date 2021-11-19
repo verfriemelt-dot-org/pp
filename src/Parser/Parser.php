@@ -1,18 +1,26 @@
-<?php declare( strict_types = 1 );
+<?php
+
+    declare( strict_types = 1 );
+
+    namespace verfriemelt\pp\Parser;
+
+    use \Closure;
+    use \Exception;
 
     final class Parser {
 
         private Closure $parser;
 
+        /** @phpstan-ignore-next-line */
         private string $label = '';
 
-        public function __construct( string $label, \Closure $parser ) {
-            $this->label = $label;
+        public function __construct( string $label, Closure $parser ) {
+            $this->label  = $label;
             $this->parser = $parser;
         }
 
-        public function run( ParserInputInterface $input, ParserState $state ): ParserState {
-            return ($this->parser)( $input, $state );
+        public function run( ParserInputInterface $input, ParserState $state = null ): ParserState {
+            return ($this->parser)( $input, $state ?? new ParserState );
         }
 
         public function map( Closure $callable ): Parser {
@@ -35,7 +43,7 @@
 
             $parser = $this->parser;
 
-            return new static( 'mapError', static function ( ParserInputInterface $input, ParserState $state ) use ( $callable, $parser  ): ParserState {
+            return new static( 'mapError', static function ( ParserInputInterface $input, ParserState $state ) use ( $callable, $parser ): ParserState {
 
                     $state = $parser( $input, $state );
 
@@ -61,8 +69,8 @@
 
                     $nextParser = $callback( $nextState->getResult() );
 
-                    if ( ! ($nextParser instanceof Parser) ) {
-                        throw new Exception('chain: callbacks must return a parser');
+                    if ( !($nextParser instanceof Parser) ) {
+                        throw new Exception( 'chain: callbacks must return a parser' );
                     }
 
                     return $nextParser->run( $input, $nextState );

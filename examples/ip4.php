@@ -1,9 +1,15 @@
 <?php
 
-    // load parser
-    array_map( fn( $file ) => require_once( $file ), glob( __DIR__ . '/Parser/**.php' ) );
+    namespace examples;
 
-    $file = '../packet.bin';
+    use \verfriemelt\pp\Parser\ParserBinaryInput;
+    use \verfriemelt\pp\Parser\ParserState;
+    use function \verfriemelt\pp\Parser\functions\sequenceOf;
+    use function \verfriemelt\pp\Parser\functions\uint;
+
+    require __DIR__ . "/../vendor/autoload.php";
+
+    $file = __DIR__ . '/packet.bin';
 
     $filesize = filesize( $file );
     $fp       = fopen( $file, 'rb' );
@@ -35,7 +41,7 @@
         ->map( $flatTags )
         ->chain( function ( $res ) use ( $tag, $flatTags ) {
 
-        if ( $res->getResult()['IHL'] > 4 ) {
+        if ( $res['IHL'] > 4 ) {
             return sequenceOf(
                     sequenceOf( uint( 8 ), uint( 8 ), uint( 8 ), uint( 8 ), )->map( fn( $i ) => implode( ".", $i ) )->map( $tag( 'Source Ip' ) ),
                     sequenceOf( uint( 8 ), uint( 8 ), uint( 8 ), uint( 8 ), )->map( fn( $i ) => implode( ".", $i ) )->map( $tag( 'Destination Ip' ) ),
@@ -43,5 +49,5 @@
         }
     } );
 
-    print_r( $parser->run( $input, new ParserState )->getResult() );
+    print_r( $parser->run( $input )->getResult() );
 

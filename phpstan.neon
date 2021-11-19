@@ -1,0 +1,20 @@
+includes:
+    - vendor/phpstan/phpstan-phpunit/extension.neon
+    - vendor/phpstan/phpstan-strict-rules/rules.neon
+    - vendor/phpstan/phpstan/conf/bleedingEdge.neon
+
+
+parameters:
+
+  level: 9
+  phpVersion: 80000
+
+  paths:
+    - src
+    - tests
+
+  checkMissingIterableValueType: false
+
+  parallel:
+    processTimeout: 30.0
+
