@@ -4,11 +4,11 @@
 
     namespace verfriemelt\pp\Parser\functions;
 
-use \Closure;
-use \verfriemelt\pp\Parser\Parser;
-use \verfriemelt\pp\Parser\ParserInput;
-use \verfriemelt\pp\Parser\ParserInputInterface;
-use \verfriemelt\pp\Parser\ParserState;
+    use \Closure;
+    use \verfriemelt\pp\Parser\Parser;
+    use \verfriemelt\pp\Parser\ParserInput;
+    use \verfriemelt\pp\Parser\ParserInputInterface;
+    use \verfriemelt\pp\Parser\ParserState;
 
     function choice( Parser ... $parsers ): Parser {
 
@@ -49,12 +49,10 @@ use \verfriemelt\pp\Parser\ParserState;
     }
 
     function many( Parser $parser ): Parser {
-        return new Parser( 'many', static function ( ParserInputInterface $input, ParserState $state ) use ( &$parser ): ParserState {
+        return new Parser( 'many', static function ( ParserInputInterface $input, ParserState $currentState ) use ( &$parser ): ParserState {
 
                 $results = [];
                 $isDone  = false;
-
-                $currentState = $state;
 
                 while ( !$isDone ) {
 
@@ -73,12 +71,10 @@ use \verfriemelt\pp\Parser\ParserState;
     }
 
     function manyOne( Parser $parser ): Parser {
-        return new Parser( 'many', static function ( ParserInputInterface $input, ParserState $state ) use ( &$parser ): ParserState {
+        return new Parser( 'many', static function ( ParserInputInterface $input, ParserState $currentState ) use ( &$parser ): ParserState {
 
                 $results = [];
                 $isDone  = false;
-
-                $currentState = $state;
 
                 while ( !$isDone ) {
 
@@ -154,7 +150,7 @@ use \verfriemelt\pp\Parser\ParserState;
     }
 
     function contextual( \Closure $generator ): Closure {
-        return fn( $i ) => succeed( null )->chain( static function () use ( $generator ) {
+        return static fn() => succeed( null )->chain( static function () use ( $generator ) {
 
                 $iterator = null;
 
@@ -177,4 +173,22 @@ use \verfriemelt\pp\Parser\ParserState;
 
                 return $step();
             } );
+    }
+
+    function optional( Parser $parser ): Parser {
+
+        $opt = new Parser( 'optional', static function ( ParserInputInterface $input, ParserState $currentState ) use ( &$parser ): ParserState {
+
+                $nextState = $parser->run( $input, $currentState );
+
+                if ( !$nextState->isError() ) {
+                    return $nextState;
+                }
+
+                return $currentState;
+            } );
+
+        return succeed( null )->chain( contextual( function ()use ( $opt ) {
+                    return succeed( yield $opt );
+                } ) );
     }

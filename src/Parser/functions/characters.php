@@ -78,14 +78,32 @@
 
         return new Parser( 'string', static function ( ParserInput $input, ParserState $state ) use ( &$string ): ParserState {
 
-                $input = $input->getFromOffset( $state->getIndex(), strlen( $string ) );
+                $input = $input->getFromOffset( $state->getIndex(), mb_strlen( $string ) );
 
                 if ( strlen($input) === 0 ) {
                     return $state->error( "unexpected end of input" );
                 }
 
                 if ( $input === $string ) {
-                    return $state->result( $string )->incrementIndex( strlen( $string ) );
+                    return $state->result( $string )->incrementIndex( mb_strlen( $string ) );
+                } else {
+                    return $state->error( "unexpected string at position {$state->getIndex()}" );
+                }
+            } );
+    }
+
+    function caseInsensitiveString( string $string ): Parser {
+
+        return new Parser( 'string', static function ( ParserInput $input, ParserState $state ) use ( &$string ): ParserState {
+
+                $input = $input->getFromOffset( $state->getIndex(), mb_strlen( $string ) );
+
+                if ( strlen($input) === 0 ) {
+                    return $state->error( "unexpected end of input" );
+                }
+
+                if ( $input === $string ) {
+                    return $state->result( $string )->incrementIndex( mb_strlen( $string ) );
                 } else {
                     return $state->error( "unexpected string at position {$state->getIndex()}" );
                 }
