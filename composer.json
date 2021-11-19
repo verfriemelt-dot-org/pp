@@ -3,7 +3,8 @@
         "phpunit/phpunit": "^9.5",
         "phpstan/phpstan": "^1",
         "phpstan/phpstan-strict-rules": "^1",
-        "phpstan/phpstan-phpunit": "^1"
+        "phpstan/phpstan-phpunit": "^1",
+        "phpbench/phpbench": "^1.2"
     },
     "autoload": {
         "psr-4": {
