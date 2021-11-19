@@ -1,4 +1,7 @@
 {
+    "name": "verfriemelt/pp",
+    "description": "for educational purposes only",
+    "license": "MIT",
     "require-dev": {
         "phpunit/phpunit": "^9.5",
         "phpstan/phpstan": "^1",
