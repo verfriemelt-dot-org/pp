@@ -70,7 +70,7 @@
                     $nextParser = $callback( $nextState->getResult() );
 
                     if ( !($nextParser instanceof Parser) ) {
-                        throw new Exception( sprintf('chain: callbacks must return a parser, %s', $nextParser::class ) );
+                        throw new Exception( sprintf('chain: callbacks must return a parser, %s', is_object( $nextParser ) ? $nextParser::class : gettype( $nextParser )) );
                     }
 
                     return $nextParser->run( $input, $nextState );

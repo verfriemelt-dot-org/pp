@@ -188,7 +188,21 @@
                 return $currentState;
             } );
 
-        return succeed( null )->chain( contextual( function ()use ( $opt ) {
+        return succeed( null )->chain( contextual( function () use ( $opt ) {
                     return succeed( yield $opt );
                 } ) );
+    }
+
+    function not( Parser $parser ): Parser {
+
+        return new Parser( 'not', static function ( ParserInputInterface $input, ParserState $currentState ) use ( &$parser ): ParserState {
+
+                $nextState = $parser->run( $input, $currentState );
+
+                if ( $nextState->isError() ) {
+                    return $currentState;
+                }
+
+                return $currentState->error( 'should have not matched parser' );
+            } );
     }

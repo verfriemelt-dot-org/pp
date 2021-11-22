@@ -12,7 +12,7 @@
         private string $input;
 
         public function __construct( string $input ) {
-            $this->length = strlen( $input );
+            $this->length = mb_strlen( $input );
             $this->input  = $input;
         }
 
@@ -21,7 +21,7 @@
         }
 
         public function getFromOffset( int $offset, int $length ): string {
-            return substr( $this->input, $offset, $length );
+            return mb_substr( $this->input, $offset, $length );
         }
 
     }
