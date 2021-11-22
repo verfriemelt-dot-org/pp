@@ -1,0 +1,32 @@
+name: Codecept Run
+on: push
+
+jobs:
+  phpunit:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: 'true'
+
+    - name: composer
+      run: composer i
+
+    - name: run tests
+      run: vendor/bin/phpunit
+
+  phpstan:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: 'true'
+
+    - name: composer
+      run: composer i
+
+    - name: run tests
+      run: vendor/bin/phpstan --error-format=github
+
