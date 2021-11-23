@@ -1,5 +1,22 @@
 <?php
 
+    use \verfriemelt\pp\Parser\ParserInput;
+    use \verfriemelt\pp\Parser\ParserState;
+    use function \verfriemelt\pp\Parser\functions\between;
+    use function \verfriemelt\pp\Parser\functions\char;
+    use function \verfriemelt\pp\Parser\functions\choice;
+    use function \verfriemelt\pp\Parser\functions\contextual;
+    use function \verfriemelt\pp\Parser\functions\letters;
+    use function \verfriemelt\pp\Parser\functions\many;
+    use function \verfriemelt\pp\Parser\functions\manyOne;
+    use function \verfriemelt\pp\Parser\functions\numbers;
+    use function \verfriemelt\pp\Parser\functions\punctuation;
+    use function \verfriemelt\pp\Parser\functions\regexp;
+    use function \verfriemelt\pp\Parser\functions\sequenceOf;
+    use function \verfriemelt\pp\Parser\functions\space;
+    use function \verfriemelt\pp\Parser\functions\string;
+    use function \verfriemelt\pp\Parser\functions\succeed;
+
     $take = function ( int ... $pos ) {
         return function ( array $i ) use ( $pos ) {
 
@@ -185,7 +202,7 @@
             regexp( '[^"]*' )->map( fn( $i ) => [
                 'isTickeos' => false,
                 'rest'      => $i
-            ] )
+                ] )
         )
     );
 

@@ -17,10 +17,12 @@
 
         private string $data;
 
+        private \verfriemelt\pp\Parser\Parser $p;
+
         function __construct() {
 
             require_once __DIR__ . '/../vendor/autoload.php';
-
+            $this->p = \verfriemelt\pp\Parser\functions\JSON\Json::expression();
             $this->data = <<<JSON
 {
     "name": "mathiasverraes/parsica",
@@ -62,8 +64,7 @@ JSON;
          * @Iterations(10)
          */
         public function bench_pp() {
-            $p = \verfriemelt\pp\Parser\functions\JSON\Json::expression();
-            $p->run( new \verfriemelt\pp\Parser\ParserInput( $this->data ) );
+            $this->p->run( new \verfriemelt\pp\Parser\ParserInput( $this->data ) );
         }
 
     }

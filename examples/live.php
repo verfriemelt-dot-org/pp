@@ -7,9 +7,10 @@
     } );
 
     // load parser
-    array_map( fn( $file ) => require_once( $file ), glob( __DIR__ . '/Parser/**.php' ) );
+    require __DIR__ . '/../vendor/autoload.php';
     array_map( fn( $file ) => require_once( $file ), glob( __DIR__ . '/Console/**.php' ) );
     array_map( fn( $file ) => require_once( $file ), glob( __DIR__ . '/fis/**.php' ) );
+
 
     $f = fopen( 'php://stdin', 'r' );
 
