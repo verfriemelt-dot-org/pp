@@ -9,15 +9,11 @@
             $this->parameters = $parameters;
         }
 
-        public function count() {
+        public function count(): int {
             return count( $this->parameters );
         }
 
-        /**
-         *
-         * @return ArrayIterator
-         */
-        public function getIterator() {
+        public function getIterator(): Traversable {
             return new ArrayIterator( $this->parameters );
         }
 
