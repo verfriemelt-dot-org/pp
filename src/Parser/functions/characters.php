@@ -24,7 +24,7 @@
 
     function char( string $char ): Parser {
 
-        if ( strlen( $char ) > 1 ) {
+        if ( mb_strlen( $char ) > 1 ) {
             throw new RuntimeException( 'illegal char' );
         }
 
