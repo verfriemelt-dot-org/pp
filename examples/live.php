@@ -74,6 +74,7 @@
     };
 
     $lastFrameUpdate = microtime(true);
+    $lastRenderTime = 0;
     $frameCounter = 0;
 
     while ( $line = fgets( $f ) ) {
@@ -89,7 +90,7 @@
 
             $discarded++;
             $rawFrame->addToBuffer( $line, Console::STYLE_RED );
-            array_map( fn( $line ) => $rawFrame->addToBuffer( $line, Console::STYLE_RED ), explode( "\n", print_r( $result->getError(), true ) ) );
+            array_map( static fn( $line ) => $rawFrame->addToBuffer( $line, Console::STYLE_RED ), explode( "\n", print_r( $result->getError(), true ) ) );
             $rawFrame->setScrollPos( -20 );
             continue;
         }
@@ -109,15 +110,15 @@
 
         if ( !isset( $hit[1] ) ) {
             $discarded++;
-            $rawFrame->addToBuffer( $line, Console::STYLE_RED );
-            $rawFrame->setScrollPos( -20 );
+            // $rawFrame->addToBuffer( $line, Console::STYLE_RED );
+            // $rawFrame->setScrollPos( -20 );
             continue;
         }
 
         if ( !isset( $result[5]['customer'] ) ) {
             $discarded++;
-            $rawFrame->addToBuffer( $line, Console::STYLE_RED );
-            $rawFrame->setScrollPos( -20 );
+            // $rawFrame->addToBuffer( $line, Console::STYLE_RED );
+            // $rawFrame->setScrollPos( -20 );
             continue;
         }
 
@@ -142,6 +143,7 @@
 
         if ( microtime(true) > $lastFrameUpdate + 1/30 ) {
 
+            $renderTime = microtime(true);
 
 
             $requestsPerSec = count( array_filter( $requestsTimer, static fn( $i ) => $i > $now - 1 ) );
@@ -154,12 +156,15 @@
 
             // debug windows
             $outputFrame->clearBuffer();
+            $outputFrame->addToBuffer( "ParseTime: {$end}" );
+            $outputFrame->addToBuffer( "last render time: {$lastRenderTime}" );
+            $outputFrame->addToBuffer( "buffersize self: {$outputFrame->getBufferSize()}" );
+            $outputFrame->addToBuffer( "buffersize raw : {$rawFrame->getBufferSize()}" );
+            $outputFrame->addToBuffer( "buffersize info: {$infoFrame->getBufferSize()}" );
             array_map( [ $outputFrame, "addToBuffer" ], explode( "\n", print_r( $result, true ) ) );
 
             // info window
             $infoFrame->clearBuffer();
-            $outputFrame->addToBuffer( "ParseTime: {$end}" );
-            $outputFrame->addToBuffer( "" );
 
             $requestInfo = "Requests: Total {$counter} ( pings: {$ping} / discarded: {$discarded} ) [frame: {$frameCounter}] ";
             $requestInfo .= "{$requestsPerMin} r/m  {$requestsPerSec} r/s";
@@ -185,9 +190,9 @@
             $infoFrame->render();
             $rawFrame->render();
             $outputFrame->render();
-            $rawFrame->render();
 
             $lastFrameUpdate = microtime(true);
+            $lastRenderTime = $renderTime = microtime(true) - $renderTime;
             ++$frameCounter;
         }
     }

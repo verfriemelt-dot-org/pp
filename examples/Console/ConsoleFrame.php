@@ -134,4 +134,8 @@
             }
         }
 
+        public function getBufferSize(): int {
+            return count( $this->buffer ) ;
+        }
+
     }
