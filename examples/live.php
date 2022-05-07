@@ -21,7 +21,7 @@
     $infoFrame   = new ConsoleFrame( $cli );
     $rawFrame    = new ConsoleFrame( $cli );
 
-    $updateLayout = function () use ( $cli, $outputFrame, $infoFrame, $rawFrame ) {
+    $updateLayout = static function () use ( $cli, $outputFrame, $infoFrame, $rawFrame ) {
 
         $cli->updateDimensions();
 
@@ -57,9 +57,9 @@
 
     $disableOutput = $argc > 1;
 
-    $pad           = fn( $str ) => str_pad( $str, 12, " ", STR_PAD_LEFT );
+    $pad           = static fn( $str ) => str_pad( $str, 12, " ", STR_PAD_LEFT );
     $cHeader       = str_repeat( ' ', 20 ) . $pad( 'pver' ) . $pad( 'spoint' ) . $pad( 'ktable' ) . $pad( 'kptable' ) . $pad( 'report' ) . $pad( 'map' ) . $pad( 'monitor' );
-    $printCustomer = function ( Customer $c ) use ( $pad ) {
+    $printCustomer = static function ( Customer $c ) use ( $pad ) {
 
         return
         str_pad( $c->getName(), 20, " " ) .
@@ -73,20 +73,17 @@
         ;
     };
 
+    $lastFrameUpdate = microtime(true);
+    $frameCounter = 0;
+
     while ( $line = fgets( $f ) ) {
 
-        $disableOutput || $now = microtime( true );
+        $now = microtime( true );
+        $requestsTimer[] = $now;
         $counter++;
 
-        $disableOutput || $requestsTimer[] = $now;
-
-        $disableOutput || $requestsPerSec = count( array_filter( $requestsTimer, fn( $i ) => $i > $now - 1 ) );
-        $disableOutput || $requestsPerMin = count( array_filter( $requestsTimer, fn( $i ) => $i > $now - 60 ) );
-
-        $disableOutput || $requestsTimer = array_filter( $requestsTimer, fn( $i ) => $i > $now - 60 );
-
         $result = $parser( $line );
-        $disableOutput || $end    = microtime( true ) - $now;
+        $end    = microtime( true ) - $now;
 
         if ( $result->isError() ) {
 
@@ -94,7 +91,6 @@
             $rawFrame->addToBuffer( $line, Console::STYLE_RED );
             array_map( fn( $line ) => $rawFrame->addToBuffer( $line, Console::STYLE_RED ), explode( "\n", print_r( $result->getError(), true ) ) );
             $rawFrame->setScrollPos( -20 );
-            $disableOutput || $rawFrame->render();
             continue;
         }
 
@@ -115,7 +111,6 @@
             $discarded++;
             $rawFrame->addToBuffer( $line, Console::STYLE_RED );
             $rawFrame->setScrollPos( -20 );
-            $disableOutput || $rawFrame->render();
             continue;
         }
 
@@ -123,7 +118,6 @@
             $discarded++;
             $rawFrame->addToBuffer( $line, Console::STYLE_RED );
             $rawFrame->setScrollPos( -20 );
-            $disableOutput || $rawFrame->render();
             continue;
         }
 
@@ -131,7 +125,6 @@
 
         if ( !isset( $customers[$customerName] ) ) {
             $customers[$customerName] = (new Customer() )->setName( $customerName );
-            ksort( $customers, SORT_NATURAL );
         }
 
         $c = $customers[$customerName];
@@ -140,47 +133,63 @@
         if ( $isTickeos && !$isLib ) {
             $versions[ $result[5]['version'] ] ??= 0;
             $versions[ $result[5]['version'] ]++;
-            ksort( $versions, SORT_NATURAL );
         }
 
         if ( $isTickeos && $isLib && $result[5]['version'] !== 'java' ) {
             $libVersions[ $result[5]['version'] ] ??= 0;
             $libVersions[ $result[5]['version'] ]++;
-            ksort( $libVersions, SORT_NATURAL );
         }
 
-        // debug windows
-        $outputFrame->clearBuffer();
-        array_map( [ $outputFrame, "addToBuffer" ], explode( "\n", print_r( $result, true ) ) );
-        $disableOutput || $outputFrame->render();
+        if ( microtime(true) > $lastFrameUpdate + 1/30 ) {
 
-        // info window
-        $infoFrame->clearBuffer();
-        $disableOutput || $outputFrame->addToBuffer( "ParseTime: {$end}" );
-        $outputFrame->addToBuffer( "" );
 
-        $requestInfo = "Requests: Total {$counter} ( pings: {$ping} / discarded:Z {$discarded} )";
-        $disableOutput || $requestInfo .= "{$requestsPerMin}r/m   {$requestsPerSec}r/s";
 
-        $infoFrame->addToBuffer( $requestInfo );
-        $infoFrame->addToBuffer( "" );
+            $requestsPerSec = count( array_filter( $requestsTimer, static fn( $i ) => $i > $now - 1 ) );
+            $requestsTimer = array_filter( $requestsTimer, static fn( $i ) => $i > $now - 60 );
+            $requestsPerMin = count( $requestsTimer );
 
-        $infoFrame->addToBuffer( "Tickeos Versions" );
-        array_map( fn( $line ) => $infoFrame->addToBuffer( $line, Console::STYLE_GREEN ), array_map(fn($a,$b) => "  {$a}: {$b}", array_keys($versions), $versions ) );
+            ksort( $customers, SORT_NATURAL );
+            ksort( $versions, SORT_NATURAL );
+            ksort( $libVersions, SORT_NATURAL );
 
-        $infoFrame->addToBuffer( "Lib Versions" );
-        array_map( fn( $line ) => $infoFrame->addToBuffer( $line, Console::STYLE_GREEN ), array_map(fn($a,$b) => "  {$a}: {$b}", array_keys($libVersions), $libVersions ) );
+            // debug windows
+            $outputFrame->clearBuffer();
+            array_map( [ $outputFrame, "addToBuffer" ], explode( "\n", print_r( $result, true ) ) );
 
-        $infoFrame->addToBuffer( $cHeader );
-        array_map( fn( Customer $customer ) => $infoFrame->addToBuffer( $printCustomer( $customer ), Console::STYLE_GREEN ), $customers );
+            // info window
+            $infoFrame->clearBuffer();
+            $outputFrame->addToBuffer( "ParseTime: {$end}" );
+            $outputFrame->addToBuffer( "" );
 
-        $disableOutput || $infoFrame->render();
+            $requestInfo = "Requests: Total {$counter} ( pings: {$ping} / discarded: {$discarded} ) [frame: {$frameCounter}] ";
+            $requestInfo .= "{$requestsPerMin} r/m  {$requestsPerSec} r/s";
 
-        // log window
-        $rawFrame->setBuffer( array_slice( $rawFrame->getBuffer(), -20 ) );
-        $isTickeos || $isPing || $rawFrame->addToBuffer( $line, $isTickeos ? Console::STYLE_BLUE : Console::STYLE_WHITE  );
-        $rawFrame->setScrollPos( -20 );
-        $disableOutput || $rawFrame->render();
+            $infoFrame->addToBuffer( $requestInfo );
+            $infoFrame->addToBuffer( "" );
+
+            $infoFrame->addToBuffer( "Tickeos Versions" );
+            array_map( static fn( $line ) => $infoFrame->addToBuffer( $line, Console::STYLE_GREEN ), array_map(static fn($a,$b) => "  {$a}: {$b}", array_keys($versions), $versions ) );
+
+            $infoFrame->addToBuffer( "Lib Versions" );
+            array_map( static fn( $line ) => $infoFrame->addToBuffer( $line, Console::STYLE_GREEN ), array_map(static fn($a,$b) => "  {$a}: {$b}", array_keys($libVersions), $libVersions ) );
+
+            $infoFrame->addToBuffer( $cHeader );
+            array_map( static fn( Customer $customer ) => $infoFrame->addToBuffer( $printCustomer( $customer ), Console::STYLE_GREEN ), $customers );
+
+
+            // log window
+            $rawFrame->setBuffer( array_slice( $rawFrame->getBuffer(), -20 ) );
+            $isTickeos || $isPing || $rawFrame->addToBuffer( $line, $isTickeos ? Console::STYLE_BLUE : Console::STYLE_WHITE  );
+            $rawFrame->setScrollPos( -20 );
+
+            $infoFrame->render();
+            $rawFrame->render();
+            $outputFrame->render();
+            $rawFrame->render();
+
+            $lastFrameUpdate = microtime(true);
+            ++$frameCounter;
+        }
     }
 
     $infoFrame->render();

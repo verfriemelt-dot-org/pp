@@ -17,8 +17,8 @@
     use function \verfriemelt\pp\Parser\functions\string;
     use function \verfriemelt\pp\Parser\functions\succeed;
 
-    $take = function ( int ... $pos ) {
-        return function ( array $i ) use ( $pos ) {
+    $take = static function ( int ... $pos ) {
+        return static function ( array $i ) use ( $pos ) {
 
             if ( count( $pos ) === 1 ) {
                 return $i[$pos[0]];
@@ -35,7 +35,7 @@
     };
 
     $ip = sequenceOf( numbers(), char( '.' ), numbers(), char( '.' ), numbers(), char( '.' ), numbers(), )
-        ->map( fn( $i ) => implode( '', $i ) );
+        ->map( static fn( $i ) => implode( '', $i ) );
 
     $userInfo = sequenceOf(
         space(), char( '-' ), space(), char( '-' ), space(),
@@ -54,7 +54,7 @@
                 numbers(), char( '/' ), letters(), char( '/' ), numbers(), char( ":" ),
                 numbers(), char( ":" ), numbers(), char( ":" ), numbers(),
                 space(), char( "+" ), numbers()
-            )->map( fn( $time ) => DateTime::createFromFormat( 'd/M/Y:H:i:s+', implode( '', $time ) ) )
+            )->map( static fn( $time ) => DateTime::createFromFormat( 'd/M/Y:H:i:s+', implode( '', $time ) ) )
         ),
         space()
         )->map( $take( 0 ) );
@@ -76,7 +76,7 @@
     $request = sequenceOf( $quoted(
             sequenceOf(
                 $httpVerb, space(),
-                manyOne( choice( letters(), numbers(), char( '/' ), punctuation() ) )->map( fn( $i ) => implode( '', $i ) ), space(),
+                manyOne( choice( letters(), numbers(), char( '/' ), punctuation() ) )->map( static fn( $i ) => implode( '', $i ) ), space(),
                 $httpVersion
             )->map( $take( 0, 2, 4 ) )
         ),
@@ -88,11 +88,11 @@
     $reponseSize = sequenceOf( numbers(), space() )->map( $take( 0 ) );
 
     $tickeos = string( 'TICKeos' )
-        ->chain( contextual( function () use ( $bracketed, $take ) {
+        ->chain( contextual( static function () use ( $bracketed, $take ) {
 
             yield char( '/' );
 
-            $version = yield sequenceOf( numbers(), char( '.' ), numbers() )->map( fn( $i ) => implode( '', $i ) );
+            $version = yield sequenceOf( numbers(), char( '.' ), numbers() )->map( static fn( $i ) => implode( '', $i ) );
 
             if ( $version === '2021.02' ) {
 
@@ -115,9 +115,9 @@
             [$commitHash, $commitDate] = yield
                 $bracketed(
                     sequenceOf(
-                        many( choice( letters(), numbers() ) )->map( fn( $i ) => implode( '', $i ) ),
+                        many( choice( letters(), numbers() ) )->map( static fn( $i ) => implode( '', $i ) ),
                         char( ';' ), space(),
-                        sequenceOf( numbers(), char( '-' ), numbers(), char( '-' ), numbers() )->map( fn( $i ) => implode( '', $i ) )
+                        sequenceOf( numbers(), char( '-' ), numbers(), char( '-' ), numbers() )->map( static fn( $i ) => implode( '', $i ) )
                     )->map( $take( 0, 3 ) )
             );
 
@@ -125,7 +125,7 @@
 
             $customerInfo = yield $bracketed(
                     sequenceOf(
-                        manyOne( choice( letters(), numbers() ) )->map( fn( $i ) => implode( '', $i ) ),
+                        manyOne( choice( letters(), numbers() ) )->map( static fn( $i ) => implode( '', $i ) ),
                         choice( space(), char( '-' ), char( '/' ) ),
                         regexp( '[^\)]*' )
                     )
@@ -148,7 +148,7 @@
                 ] );
         } ) );
 
-    $libParser = succeed( null )->chain( contextual( function ()use ( $bracketed, $take ) {
+    $libParser = succeed( null )->chain( contextual( static function ()use ( $bracketed, $take ) {
 
             $customerInfo = yield manyOne(
                     choice(
@@ -157,11 +157,11 @@
                         letters(),
                         numbers(),
                     )
-                )->map( fn( $i ) => array_pop( $i ) );
+                )->map( static fn( $i ) => array_pop( $i ) );
 
             yield char( '/' );
 
-            $version = yield manyOne( choice( numbers(), char( '.' ) ) )->map( fn( $i ) => implode( '', $i ) );
+            $version = yield manyOne( choice( numbers(), char( '.' ) ) )->map( static fn( $i ) => implode( '', $i ) );
 
             yield space();
 
@@ -178,11 +178,11 @@
                 ] );
         } ) );
 
-    $java = string( 'Java' )->chain( contextual( function () {
+    $java = string( 'Java' )->chain( contextual( static function () {
 
             yield char( '/' );
 
-            $version = yield manyOne( choice( numbers(), char( '.' ), char( "_" ) ) )->map( fn( $i ) => implode( '', $i ) );
+            $version = yield manyOne( choice( numbers(), char( '.' ), char( "_" ) ) )->map( static fn( $i ) => implode( '', $i ) );
             $rest    = yield regexp( '[^"]*' );
 
             yield succeed( [
@@ -199,7 +199,7 @@
             $tickeos,
             $libParser,
             $java,
-            regexp( '[^"]*' )->map( fn( $i ) => [
+            regexp( '[^"]*' )->map( static fn( $i ) => [
                 'isTickeos' => false,
                 'rest'      => $i
                 ] )
@@ -218,7 +218,7 @@
         )
         ->map( $take( 0, 2, 3, 4, 5, 7 ) );
 
-    $parser = function ( $line ) use ( $requestParser ) {
+    $parser = static function ( $line ) use ( $requestParser ) {
 
         $input = new ParserInput( $line );
         $state = new ParserState();
