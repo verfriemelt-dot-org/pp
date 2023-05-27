@@ -26,7 +26,7 @@ function choice(Parser ...$parsers): Parser
 
 function sequenceOf(Parser ...$parsers): Parser
 {
-    return new Parser('choice', static function (ParserInputInterface $input, ParserState $state) use (&$parsers): ParserState {
+    return new Parser('sequenceOf', static function (ParserInputInterface $input, ParserState $state) use (&$parsers): ParserState {
         if ($state->isError()) {
             return $state;
         }
@@ -67,7 +67,7 @@ function many(Parser $parser): Parser
 
 function manyOne(Parser $parser): Parser
 {
-    return new Parser('many', static function (ParserInputInterface $input, ParserState $currentState) use (&$parser): ParserState {
+    return new Parser('manyOne', static function (ParserInputInterface $input, ParserState $currentState) use (&$parser): ParserState {
         $results = [];
         $isDone = false;
 
@@ -92,7 +92,7 @@ function manyOne(Parser $parser): Parser
 
 function seperatedBy(Parser $seperator): Closure
 {
-    return static fn (Parser $value) => new Parser('seperatered', static function (ParserInputInterface $input, ParserState $state) use (&$value, &$seperator): ParserState {
+    return static fn (Parser $value) => new Parser('seperatedBy', static function (ParserInputInterface $input, ParserState $state) use (&$value, &$seperator): ParserState {
         $results = [];
 
         $currentState = $state;
@@ -143,7 +143,7 @@ function succeed(mixed $value): Parser
 
 function fail(string $msg): Parser
 {
-    return new Parser('succeed', static fn (ParserInput $input, ParserState $state): ParserState => $state->error($msg));
+    return new Parser('fail', static fn (ParserInput $input, ParserState $state): ParserState => $state->error($msg));
 }
 
 function contextual(Closure $generator): Closure
