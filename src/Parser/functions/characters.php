@@ -12,7 +12,7 @@ use verfriemelt\pp\Parser\ParserState;
 function regexp(string $pattern): Parser
 {
     return new Parser('regex', static function (ParserInput $input, ParserState $state) use (&$pattern): ParserState {
-        if ((bool) preg_match("~($pattern)~", $input->getFromOffset($state->getIndex(), $input->getLength()), $hits)) {
+        if (1 === preg_match("~($pattern)~", $input->getFromOffset($state->getIndex(), $input->getLength()), $hits)) {
             return $state->result($hits[1])->incrementIndex(strlen($hits[1]));
         }
 

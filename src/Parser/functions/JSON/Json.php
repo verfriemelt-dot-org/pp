@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace verfriemelt\pp\Parser\functions\JSON;
 
+use IntlChar;
 use verfriemelt\pp\Parser\Parser;
 use verfriemelt\pp\Parser\ParserInput;
 use verfriemelt\pp\Parser\ParserState;
@@ -63,8 +64,8 @@ class Json
         return
             sequenceOf(
                 optional(choice(char('+'), char('-'))),
-                numbers()
-            )->map(static fn ($i) => (int) implode('', array_filter($i)));
+                numbers(),
+            )->map(static fn ($i) => (int) \implode('', array_filter($i)));
     }
 
     public static function float(): Parser
@@ -72,9 +73,20 @@ class Json
         return sequenceOf(
             optional(choice(char('+'), char('-'))),
             optional(numbers()),
-            char('.'),
-            numbers()
-        )->map(static fn ($i): float => (float) implode('', array_filter($i)))
+            choice(
+                sequenceOf(
+                    char('.'),
+                    numbers()
+                )->map(static fn ($i) => \implode('', $i)),
+                optional(
+                    sequenceOf(
+                        char('e'),
+                        choice(char('+'), char('-')),
+                        numbers(),
+                    )->map(fn ($i) => \implode('', $i))
+                )
+            )
+        )->map(static fn ($i): float => (float) \implode('', array_filter($i)))
         ;
     }
 
@@ -90,7 +102,15 @@ class Json
 
     public static function strings(): Parser
     {
-        return between(char('"'), char('"'))(regexp('[^"]+'));
+        return between(
+            char('"'),
+            char('"')
+        )(
+            choice(
+                regexp('\\\\u[a-fA-F0-9]{4}')->map(static fn (string $i): string => IntlChar::chr((int) \hexdec(\substr($i, 2, 4)))),
+                regexp('[^"]+')
+            )
+        );
     }
 
     public static function literal(): Parser

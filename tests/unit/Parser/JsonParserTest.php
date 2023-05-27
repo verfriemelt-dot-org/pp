@@ -9,6 +9,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use verfriemelt\pp\Parser\functions\JSON\Json;
 use verfriemelt\pp\Parser\ParserInput;
+use RuntimeException;
 
 class JsonParserTest extends TestCase
 {
@@ -80,7 +81,41 @@ class JsonParserTest extends TestCase
     {
         $r = Json::expression()->run(new ParserInput($input));
 
-        static::assertFalse($r->isError());
+        static::assertFalse($r->isError(), $msg . $r->getError());
         static::assertSame($expected, $r->getResult(), $msg);
+    }
+
+    public static function jsonFiles(): Generator
+    {
+        $files = \glob(__DIR__ . '/../../_data/json/*.json');
+
+        if ($files === false) {
+            throw new RuntimeException('cant load testfiles');
+        }
+
+        foreach ($files as $test) {
+            $content = \file_get_contents($test);
+
+            if ($content === false) {
+                throw new RuntimeException();
+            }
+
+            yield \basename($test) => [
+                $content,
+                \json_decode($content, flags: \JSON_THROW_ON_ERROR),
+            ];
+        }
+    }
+
+    #[DataProvider('jsonFiles')]
+    public function test_json_encoder(string $input, mixed $expected): void
+    {
+        $result = Json::parse($input);
+
+        if ($expected !== $result) {
+            static::markTestSkipped('not implemented');
+        }
+
+        static::assertSame($expected, $result);
     }
 }

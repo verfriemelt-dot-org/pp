@@ -3,7 +3,8 @@
     "description": "for educational purposes only",
     "license": "MIT",
     "require": {
-        "php": "^8.2"
+        "php": "^8.2",
+        "ext-intl": "*"
     },
     "require-dev": {
         "phpunit/phpunit": "^10",

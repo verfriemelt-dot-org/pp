@@ -29,7 +29,7 @@ final class Parser
     {
         $parser = $this->parser;
 
-        return new static('map', static function (ParserInputInterface $input, ParserState $state) use ($callable, $parser): ParserState {
+        return new self('map', static function (ParserInputInterface $input, ParserState $state) use ($callable, $parser): ParserState {
             $state = $parser($input, $state);
 
             if ($state->isError()) {
@@ -44,7 +44,7 @@ final class Parser
     {
         $parser = $this->parser;
 
-        return new static('mapError', static function (ParserInputInterface $input, ParserState $state) use ($callable, $parser): ParserState {
+        return new self('mapError', static function (ParserInputInterface $input, ParserState $state) use ($callable, $parser): ParserState {
             $state = $parser($input, $state);
 
             if (!$state->isError()) {
@@ -59,7 +59,7 @@ final class Parser
     {
         $parser = $this->parser;
 
-        return new static('chain', static function (ParserInputInterface $input, ParserState $state) use ($callback, $parser): ParserState {
+        return new self('chain', static function (ParserInputInterface $input, ParserState $state) use ($callback, $parser): ParserState {
             $nextState = $parser($input, $state);
 
             if ($nextState->isError()) {
@@ -76,7 +76,7 @@ final class Parser
         });
     }
 
-    public function label(string $label): static
+    public function label(string $label): self
     {
         $this->label = $label;
         return $this;

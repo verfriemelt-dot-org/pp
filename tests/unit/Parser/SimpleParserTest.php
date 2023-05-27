@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace tests\unit\Parser;
 
 use Generator;
+use IntlChar;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use verfriemelt\pp\Parser\ParserInput;
@@ -15,6 +16,7 @@ use function verfriemelt\pp\Parser\functions\fail;
 use function verfriemelt\pp\Parser\functions\letter;
 use function verfriemelt\pp\Parser\functions\numbers;
 use function verfriemelt\pp\Parser\functions\optional;
+use function verfriemelt\pp\Parser\functions\regexp;
 use function verfriemelt\pp\Parser\functions\sequenceOf;
 use function verfriemelt\pp\Parser\functions\succeed;
 
@@ -87,5 +89,13 @@ class SimpleParserTest extends TestCase
 
         static::assertSame('a-1', $parser->run(new ParserInput('a-1'))->getResult());
         static::assertSame('a1', $parser->run(new ParserInput('a1'))->getResult());
+    }
+
+    public function test_regex(): void
+    {
+        $parser = regexp('\\\\u[A-F0-9]{4}')->map(fn (string $i): string => IntlChar::chr((int) \hexdec(\substr($i, 2, 4))));
+        $result = $parser->run(new ParserInput('\u0022'))->getResult();
+
+        static::assertSame('"', $result);
     }
 }
