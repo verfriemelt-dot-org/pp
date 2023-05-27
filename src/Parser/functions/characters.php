@@ -107,7 +107,7 @@ function caseInsensitiveString(string $string): Parser
             return $state->error('unexpected end of input');
         }
 
-        if ($input === $string) {
+        if (\mb_strtolower($input) === \mb_strtolower($string)) {
             return $state->result($string)->incrementIndex(mb_strlen($string));
         } else {
             return $state->error("unexpected string at position {$state->getIndex()}");

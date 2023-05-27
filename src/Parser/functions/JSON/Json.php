@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace verfriemelt\pp\Parser\functions\JSON;
 
 use verfriemelt\pp\Parser\Parser;
+use verfriemelt\pp\Parser\ParserInput;
+use verfriemelt\pp\Parser\ParserState;
 
 use function verfriemelt\pp\Parser\functions\between;
+use function verfriemelt\pp\Parser\functions\caseInsensitiveString;
 use function verfriemelt\pp\Parser\functions\char;
 use function verfriemelt\pp\Parser\functions\choice;
 use function verfriemelt\pp\Parser\functions\lazy;
@@ -17,10 +20,14 @@ use function verfriemelt\pp\Parser\functions\regexp;
 use function verfriemelt\pp\Parser\functions\seperatedBy;
 use function verfriemelt\pp\Parser\functions\sequenceOf;
 use function verfriemelt\pp\Parser\functions\space;
-use function verfriemelt\pp\Parser\functions\string;
 
 class Json
 {
+    public static function parse(string $content): mixed
+    {
+        return static::expression()->run(new ParserInput($content), new ParserState())->getResult();
+    }
+
     public static function expression(): Parser
     {
         $array = between(char('['), char(']'))(lazy(static function () use (&$expression) {
@@ -78,7 +85,7 @@ class Json
 
     public static function bool(): Parser
     {
-        return choice(string('true'), string('false'));
+        return choice(caseInsensitiveString('true'), caseInsensitiveString('false'))->map(fn (string $i): bool => \strtolower($i) === 'true');
     }
 
     public static function strings(): Parser
