@@ -4,29 +4,36 @@ on: push
 jobs:
   phpunit:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v2
-      with:
-        submodules: 'true'
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-    - name: composer
-      run: composer i
+      - name: Setup PHP 8.2
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.2
 
-    - name: run tests
-      run: vendor/bin/phpunit
+      - name: composer install
+        run: composer install
+
+      - name: run tests
+        run: vendor/bin/phpunit
 
   phpstan:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v2
-      with:
-        submodules: 'true'
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-    - name: composer
-      run: composer i
+      - name: Setup PHP 8.2
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.2
 
-    - name: run tests
-      run: vendor/bin/phpstan --error-format=github
+      - name: composer install
+        run: composer install
 
+      - name: run tests
+        run: vendor/bin/phpstan --error-format=github
