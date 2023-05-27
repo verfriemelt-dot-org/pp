@@ -16,14 +16,14 @@ require __DIR__ . "/../vendor/autoload.php";
     $numberParser = numbers()->map( fn( $i ) => [
             'type'  => 'number',
             'value' => $i
-            ] )->label( 'number' );
+            ] );
 
     $operator = choice(
         char( "+" ),
         char( "-" ),
         char( "/" ),
         char( "*" ),
-        )->label( 'operator' );
+        );
 
     $expression;
 

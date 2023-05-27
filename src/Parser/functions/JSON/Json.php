@@ -22,11 +22,11 @@ use function verfriemelt\pp\Parser\functions\seperatedBy;
 use function verfriemelt\pp\Parser\functions\sequenceOf;
 use function verfriemelt\pp\Parser\functions\space;
 
-class Json
+final readonly class Json
 {
     public static function parse(string $content): mixed
     {
-        return static::expression()->run(new ParserInput($content), new ParserState())->getResult();
+        return self::expression()->run(new ParserInput($content), new ParserState())->getResult();
     }
 
     public static function expression(): Parser
@@ -41,7 +41,7 @@ class Json
             return many(
                 self::optionalWhitespace()->chain(fn () => seperatedBy(char(','))(
                     sequenceOf(
-                        self::optionalWhitespace()->chain(fn () => static::strings()),
+                        self::optionalWhitespace()->chain(fn () => self::strings()),
                         self::optionalWhitespace()->chain(fn () => char(':')),
                         self::optionalWhitespace()->chain(fn () => $expression),
                         self::optionalWhitespace(),
@@ -53,7 +53,7 @@ class Json
         $expression = choice(
             $obj,
             $array,
-            static::literal(),
+            self::literal(),
         );
 
         return $expression;
@@ -92,7 +92,7 @@ class Json
 
     public static function number(): Parser
     {
-        return choice(static::float(), static::int());
+        return choice(self::float(), self::int());
     }
 
     public static function bool(): Parser
@@ -106,10 +106,20 @@ class Json
             char('"'),
             char('"')
         )(
-            choice(
-                regexp('\\\\u[a-fA-F0-9]{4}')->map(static fn (string $i): string => IntlChar::chr((int) \hexdec(\substr($i, 2, 4)))),
-                regexp('[^"]+')
-            )
+            many(
+                choice(
+                    sequenceOf(
+                        char('\\'),
+                        char('\\')
+                    )->map(fn (array $_): string => '\\'),
+                    sequenceOf(
+                        char('\\'),
+                        char('"')
+                    )->map(fn (array $_): string => '"'),
+                    regexp('^\\\\u[a-fA-F0-9]{4}')->map(static fn (string $i): string => IntlChar::chr((int) \hexdec(\substr($i, 2, 4)))),
+                    regexp('^[^"]')
+                )
+            )->map(fn (array $i) => implode('', $i))
         );
     }
 
@@ -117,9 +127,9 @@ class Json
     {
         return sequenceOf(
             choice(
-                static::number(),
-                static::bool(),
-                static::strings(),
+                self::number(),
+                self::bool(),
+                self::strings(),
             ),
         )->map(fn (array $i) => $i[0]);
     }

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace verfriemelt\pp\Parser;
 
-class ParserInput implements ParserInputInterface
+final readonly class ParserInput implements ParserInputInterface
 {
-    private int $length = 0;
+    private int $length;
 
     private string $input;
 

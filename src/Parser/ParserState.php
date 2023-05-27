@@ -4,26 +4,14 @@ declare(strict_types=1);
 
 namespace verfriemelt\pp\Parser;
 
-class ParserState
+final readonly class ParserState
 {
-    private int $index = 0;
-
-    private mixed $result;
-
-    private bool $isError = false;
-
-    private ?string $error = null;
-
     public function __construct(
-        int $index = 0,
-        mixed $result = null,
-        bool $isError = false,
-        string $error = null,
+        private int $index = 0,
+        private mixed $result = null,
+        private bool $isError = false,
+        private ?string $error = null,
     ) {
-        $this->index = $index;
-        $this->result = $result;
-        $this->isError = $isError;
-        $this->error = $error;
     }
 
     public function getIndex(): int

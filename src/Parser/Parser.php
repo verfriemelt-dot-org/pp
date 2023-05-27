@@ -7,12 +7,12 @@ namespace verfriemelt\pp\Parser;
 use Closure;
 use Exception;
 
-final class Parser
+final readonly class Parser
 {
     private Closure $parser;
 
     /** @phpstan-ignore-next-line */
-    private string $label = '';
+    private string $label;
 
     public function __construct(string $label, Closure $parser)
     {
@@ -74,11 +74,5 @@ final class Parser
 
             return $nextParser->run($input, $nextState);
         });
-    }
-
-    public function label(string $label): self
-    {
-        $this->label = $label;
-        return $this;
     }
 }

@@ -81,7 +81,7 @@ class JsonParserTest extends TestCase
     {
         $r = Json::expression()->run(new ParserInput($input));
 
-        static::assertFalse($r->isError(), $msg . $r->getError());
+        static::assertFalse($r->isError(), "{$msg}: {$r->getError()}");
         static::assertSame($expected, $r->getResult(), $msg);
     }
 
@@ -117,5 +117,15 @@ class JsonParserTest extends TestCase
         }
 
         static::assertSame($expected, $result);
+    }
+
+    public function test_escaped_backslash(): void
+    {
+        static::assertSame('\\', Json::parse('"\\\\"'));
+    }
+
+    public function test_consecutive_codepages(): void
+    {
+        static::assertSame('""', Json::parse('"\\u0022\\u0022"'));
     }
 }

@@ -6,9 +6,9 @@ namespace verfriemelt\pp\Parser;
 
 use Exception;
 
-class ParserBinaryInput implements ParserInputInterface
+final readonly class ParserBinaryInput implements ParserInputInterface
 {
-    private int $length = 0;
+    private int $length;
 
     /** @var int[] */
     private array $input;
