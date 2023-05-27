@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.1/phpunit.xsd" bootstrap="vendor/autoload.php" executionOrder="depends,defects" failOnRisky="false" failOnWarning="true" colors="true" cacheDirectory=".phpunit.cache">
+<phpunit
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.1/phpunit.xsd"
+        bootstrap="vendor/autoload.php"
+        executionOrder="depends,defects"
+        failOnWarning="true"
+        colors="true"
+        cacheResult="false"
+        displayDetailsOnSkippedTests="false"
+>
   <testsuites>
     <testsuite name="default">
       <directory>tests</directory>
@@ -8,7 +17,7 @@
   <coverage/>
   <source>
     <include>
-      <directory suffix=".php">src</directory>
+      <directory>src</directory>
     </include>
   </source>
 </phpunit>

@@ -12,8 +12,8 @@ use verfriemelt\pp\Parser\ParserState;
 function regexp(string $pattern): Parser
 {
     return new Parser('regex', static function (ParserInput $input, ParserState $state) use (&$pattern): ParserState {
-        if (1 === preg_match("~($pattern)~", $input->getFromOffset($state->getIndex(), $input->getLength()), $hits)) {
-            return $state->result($hits[1])->incrementIndex(strlen($hits[1]));
+        if (1 === preg_match("~($pattern)~u", $input->getFromOffset($state->getIndex(), $input->getLength()), $hits)) {
+            return $state->result($hits[1])->incrementIndex(mb_strlen($hits[1]));
         }
 
         return $state->error("regex: could not match with {$pattern} beginning from position {$state->getIndex()}");
@@ -79,6 +79,11 @@ function letters(): Parser
 function numbers(): Parser
 {
     return regexp('^[0-9]+');
+}
+
+function any(): Parser
+{
+    return regexp('^.{1}');
 }
 
 function string(string $string): Parser

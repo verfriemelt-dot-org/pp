@@ -97,7 +97,15 @@ final readonly class Json
 
     public static function bool(): Parser
     {
-        return choice(caseInsensitiveString('true'), caseInsensitiveString('false'))->map(fn (string $i): bool => \strtolower($i) === 'true');
+        return choice(
+            caseInsensitiveString('true'),
+            caseInsensitiveString('false')
+        )->map(fn (string $i): bool => \strtolower($i) === 'true');
+    }
+
+    public static function null(): Parser
+    {
+        return caseInsensitiveString('null')->map(fn (string $_): null => null);
     }
 
     public static function strings(): Parser
@@ -125,13 +133,12 @@ final readonly class Json
 
     public static function literal(): Parser
     {
-        return sequenceOf(
-            choice(
-                self::number(),
-                self::bool(),
-                self::strings(),
-            ),
-        )->map(fn (array $i) => $i[0]);
+        return choice(
+            self::number(),
+            self::bool(),
+            self::strings(),
+            self::null(),
+        );
     }
 
     public static function optionalWhitespace(): Parser
