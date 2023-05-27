@@ -2,3 +2,4 @@
 .phpunit.cache/
 nbproject
 vendor
+.idea

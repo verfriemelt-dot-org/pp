@@ -1,7 +1,19 @@
 <?php
 
-    // load parser
-    array_map( fn( $file ) => require_once( $file ), glob( __DIR__ . '/Parser/**.php' ) );
+use verfriemelt\pp\Parser\ParserInput;
+
+use verfriemelt\pp\Parser\ParserState;
+
+use function verfriemelt\pp\Parser\functions\char;
+use function verfriemelt\pp\Parser\functions\choice;
+use function verfriemelt\pp\Parser\functions\contextual;
+use function verfriemelt\pp\Parser\functions\digit;
+use function verfriemelt\pp\Parser\functions\letter;
+use function verfriemelt\pp\Parser\functions\letters;
+use function verfriemelt\pp\Parser\functions\manyOne;
+use function verfriemelt\pp\Parser\functions\string;
+
+require '../vendor/autoload.php';
 
     $example1 = "VAR theAnswer INT 42";
     $example2 = 'GLOBAL_VAR greeting STRING "Hello"';
@@ -43,7 +55,7 @@
 
         }));
 
-    print_r( $parser->run( new ParserInput( "abb" ), new ParserState ) );
+    print_r( $parser->run( new ParserInput( "abb" ), new ParserState() ) );
 
 
 

@@ -1,13 +1,12 @@
 <?php
 
-    declare( strict_types = 1 );
+declare(strict_types=1);
 
-    namespace verfriemelt\pp\Parser;
+namespace verfriemelt\pp\Parser;
 
-    interface ParserInputInterface {
+interface ParserInputInterface
+{
+    public function getLength(): int;
 
-        public function getLength(): int;
-
-        public function getFromOffset( int $offset, int $length ): mixed;
-    }
-    
+    public function getFromOffset(int $offset, int $length): mixed;
+}

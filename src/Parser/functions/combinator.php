@@ -1,208 +1,201 @@
 <?php
 
-    declare( strict_types = 1 );
+declare(strict_types=1);
 
-    namespace verfriemelt\pp\Parser\functions;
+namespace verfriemelt\pp\Parser\functions;
 
-    use \Closure;
-    use \verfriemelt\pp\Parser\Parser;
-    use \verfriemelt\pp\Parser\ParserInput;
-    use \verfriemelt\pp\Parser\ParserInputInterface;
-    use \verfriemelt\pp\Parser\ParserState;
+use Closure;
+use verfriemelt\pp\Parser\Parser;
+use verfriemelt\pp\Parser\ParserInput;
+use verfriemelt\pp\Parser\ParserInputInterface;
+use verfriemelt\pp\Parser\ParserState;
 
-    function choice( Parser ... $parsers ): Parser {
+function choice(Parser ...$parsers): Parser
+{
+    return new Parser('choice', static function (ParserInputInterface $input, ParserState $state) use (&$parsers): ParserState {
+        foreach ($parsers as $parser) {
+            $newState = $parser->run($input, $state);
+            if (!$newState->isError() && $newState->getIndex() > $state->getIndex()) {
+                return $newState;
+            }
+        }
 
-        return new Parser( 'choice', static function ( ParserInputInterface $input, ParserState $state ) use ( &$parsers ): ParserState {
+        return $state->error("chould not match with any parser at position {$state->getIndex()}");
+    });
+}
 
-                foreach ( $parsers as $parser ) {
+function sequenceOf(Parser ...$parsers): Parser
+{
+    return new Parser('choice', static function (ParserInputInterface $input, ParserState $state) use (&$parsers): ParserState {
+        if ($state->isError()) {
+            return $state;
+        }
 
-                    $newState = $parser->run( $input, $state );
-                    if ( !$newState->isError() && $newState->getIndex() > $state->getIndex() ) {
-                        return $newState;
-                    }
-                }
+        $currentState = $state;
 
-                return $state->error( "chould not match with any parser at position {$state->getIndex()}" );
-            } );
-    }
+        $results = [];
 
-    function sequenceOf( Parser ... $parsers ): Parser {
+        foreach ($parsers as $parser) {
+            $currentState = $parser->run($input, $currentState);
+            $results[] = $currentState->getResult();
+        }
 
-        return new Parser( 'choice', static function ( ParserInputInterface $input, ParserState $state ) use ( &$parsers ): ParserState {
+        return $currentState->result($results);
+    });
+}
 
-                if ( $state->isError() ) {
-                    return $state;
-                }
+function many(Parser $parser): Parser
+{
+    return new Parser('many', static function (ParserInputInterface $input, ParserState $currentState) use (&$parser): ParserState {
+        $results = [];
+        $isDone = false;
 
-                $currentState = $state;
+        while (!$isDone) {
+            $nextState = $parser->run($input, $currentState);
 
-                $results = [];
+            if (!$nextState->isError() && $nextState->getIndex() > $currentState->getIndex()) {
+                $results[] = $nextState->getResult();
+                $currentState = $nextState;
+            } else {
+                $isDone = true;
+            }
+        }
 
-                foreach ( $parsers as $parser ) {
+        return $currentState->result($results);
+    });
+}
 
-                    $currentState = $parser->run( $input, $currentState );
-                    $results[]    = $currentState->getResult();
-                }
+function manyOne(Parser $parser): Parser
+{
+    return new Parser('many', static function (ParserInputInterface $input, ParserState $currentState) use (&$parser): ParserState {
+        $results = [];
+        $isDone = false;
 
-                return $currentState->result( $results );
-            } );
-    }
+        while (!$isDone) {
+            $nextState = $parser->run($input, $currentState);
 
-    function many( Parser $parser ): Parser {
-        return new Parser( 'many', static function ( ParserInputInterface $input, ParserState $currentState ) use ( &$parser ): ParserState {
+            if (!$nextState->isError() && $nextState->getIndex() > $currentState->getIndex()) {
+                $results[] = $nextState->getResult();
+                $currentState = $nextState;
+            } else {
+                $isDone = true;
+            }
+        }
 
-                $results = [];
-                $isDone  = false;
+        if (count($results) === 0) {
+            return $currentState->error('must at least match one parser at index ' . $currentState->getIndex());
+        }
 
-                while ( !$isDone ) {
+        return $currentState->result($results);
+    });
+}
 
-                    $nextState = $parser->run( $input, $currentState );
+function seperatedBy(Parser $seperator): Closure
+{
+    return static fn (Parser $value) => new Parser('seperatered', static function (ParserInputInterface $input, ParserState $state) use (&$value, &$seperator): ParserState {
+        $results = [];
 
-                    if ( !$nextState->isError() && $nextState->getIndex() > $currentState->getIndex() ) {
-                        $results[]    = $nextState->getResult();
-                        $currentState = $nextState;
-                    } else {
-                        $isDone = true;
-                    }
-                }
+        $currentState = $state;
 
-                return $currentState->result( $results );
-            } );
-    }
+        while (true) {
+            $nextState = $value->run($input, $currentState);
 
-    function manyOne( Parser $parser ): Parser {
-        return new Parser( 'many', static function ( ParserInputInterface $input, ParserState $currentState ) use ( &$parser ): ParserState {
+            if (!$nextState->isError() && $nextState->getIndex() > $currentState->getIndex()) {
+                $results[] = $nextState->getResult();
+                $currentState = $nextState;
+            } else {
+                break;
+            }
 
-                $results = [];
-                $isDone  = false;
+            $nextState = $seperator->run($input, $currentState);
 
-                while ( !$isDone ) {
+            if (!$nextState->isError() && $nextState->getIndex() > $currentState->getIndex()) {
+                $currentState = $nextState;
+            } else {
+                break;
+            }
+        }
 
-                    $nextState = $parser->run( $input, $currentState );
+        return $currentState->result($results);
+    });
+}
 
-                    if ( !$nextState->isError() && $nextState->getIndex() > $currentState->getIndex() ) {
-                        $results[]    = $nextState->getResult();
-                        $currentState = $nextState;
-                    } else {
-                        $isDone = true;
-                    }
-                }
+function between(Parser $left, Parser $right): Closure
+{
+    return static fn (Parser $between) => sequenceOf(
+        $left,
+        $between,
+        $right,
+    )->map(fn ($r) => $r[1]);
+}
 
-                if ( count( $results ) === 0 ) {
-                    return $currentState->error( 'must at least match one parser at index ' . $currentState->getIndex() );
-                }
+function lazy(Closure $lazy): Parser
+{
+    return new Parser('lazy', static function (ParserInputInterface $input, ParserState $state) use (&$lazy): ParserState {
+        return $lazy()->run($input, $state);
+    });
+}
 
-                return $currentState->result( $results );
-            } );
-    }
+function succeed(mixed $value): Parser
+{
+    return new Parser('succeed', static fn (ParserInput $input, ParserState $state): ParserState => $state->result($value));
+}
 
-    function seperatedBy( Parser $seperator ): Closure {
-        return static fn( Parser $value ) => new Parser( 'seperatered', static function ( ParserInputInterface $input, ParserState $state ) use ( &$value, &$seperator ): ParserState {
+function fail(string $msg): Parser
+{
+    return new Parser('succeed', static fn (ParserInput $input, ParserState $state): ParserState => $state->error($msg));
+}
 
-                    $results = [];
+function contextual(Closure $generator): Closure
+{
+    return static fn () => succeed(null)->chain(static function () use ($generator) {
+        $iterator = null;
 
-                    $currentState = $state;
+        $step = static function ($nextValue = null) use (&$step, &$iterator, &$generator) {
+            if ($iterator === null) {
+                $iterator = $generator();
+                $parser = $iterator->current();
+            } else {
+                $parser = $iterator->send($nextValue);
+            }
 
-                    while ( true ) {
+            if (!$iterator->valid()) {
+                return succeed($nextValue);
+            }
 
-                        $nextState = $value->run( $input, $currentState );
+            return $parser->chain($step);
+        };
 
-                        if ( !$nextState->isError() && $nextState->getIndex() > $currentState->getIndex() ) {
-                            $results[]    = $nextState->getResult();
-                            $currentState = $nextState;
-                        } else {
-                            break;
-                        }
+        return $step();
+    });
+}
 
-                        $nextState = $seperator->run( $input, $currentState );
+function optional(Parser $parser): Parser
+{
+    $opt = new Parser('optional', static function (ParserInputInterface $input, ParserState $currentState) use (&$parser): ParserState {
+        $nextState = $parser->run($input, $currentState);
 
-                        if ( !$nextState->isError() && $nextState->getIndex() > $currentState->getIndex() ) {
-                            $currentState = $nextState;
-                        } else {
-                            break;
-                        }
-                    }
+        if (!$nextState->isError()) {
+            return $nextState;
+        }
 
-                    return $currentState->result( $results );
-                } );
-    }
+        return $currentState;
+    });
 
-    function between( Parser $left, Parser $right ): Closure {
-        return static fn( Parser $between ) => sequenceOf(
-                $left,
-                $between,
-                $right,
-            )->map( fn( $r ) => $r[1] );
-    }
+    return succeed(null)->chain(contextual(function () use ($opt) {
+        return succeed(yield $opt);
+    }));
+}
 
-    function lazy( \Closure $lazy ): Parser {
-        return new Parser( 'lazy', static function ( ParserInputInterface $input, ParserState $state ) use ( &$lazy ): ParserState {
-                return $lazy()->run( $input, $state );
-            } );
-    }
+function not(Parser $parser): Parser
+{
+    return new Parser('not', static function (ParserInputInterface $input, ParserState $currentState) use (&$parser): ParserState {
+        $nextState = $parser->run($input, $currentState);
 
-    function succeed( mixed $value ): Parser {
-        return new Parser( 'succeed', static fn( ParserInput $input, ParserState $state ): ParserState => $state->result( $value ) );
-    }
+        if ($nextState->isError()) {
+            return $currentState;
+        }
 
-    function fail( string $msg ): Parser {
-        return new Parser( 'succeed', static fn( ParserInput $input, ParserState $state ): ParserState => $state->error( $msg ) );
-    }
-
-    function contextual( \Closure $generator ): Closure {
-        return static fn() => succeed( null )->chain( static function () use ( $generator ) {
-
-                $iterator = null;
-
-                $step = static function ( $nextValue = null ) use ( &$step, &$iterator, &$generator ) {
-
-                    if ( $iterator === null ) {
-                        $iterator = $generator();
-                        $parser   = $iterator->current();
-                    } else {
-                        $parser = $iterator->send( $nextValue );
-                    }
-
-
-                    if ( !$iterator->valid() ) {
-                        return succeed( $nextValue );
-                    }
-
-                    return $parser->chain( $step );
-                };
-
-                return $step();
-            } );
-    }
-
-    function optional( Parser $parser ): Parser {
-
-        $opt = new Parser( 'optional', static function ( ParserInputInterface $input, ParserState $currentState ) use ( &$parser ): ParserState {
-
-                $nextState = $parser->run( $input, $currentState );
-
-                if ( !$nextState->isError() ) {
-                    return $nextState;
-                }
-
-                return $currentState;
-            } );
-
-        return succeed( null )->chain( contextual( function () use ( $opt ) {
-                    return succeed( yield $opt );
-                } ) );
-    }
-
-    function not( Parser $parser ): Parser {
-
-        return new Parser( 'not', static function ( ParserInputInterface $input, ParserState $currentState ) use ( &$parser ): ParserState {
-
-                $nextState = $parser->run( $input, $currentState );
-
-                if ( $nextState->isError() ) {
-                    return $currentState;
-                }
-
-                return $currentState->error( 'should have not matched parser' );
-            } );
-    }
+        return $currentState->error('should have not matched parser');
+    });
+}
