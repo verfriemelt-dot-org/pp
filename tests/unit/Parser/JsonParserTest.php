@@ -42,6 +42,8 @@ class JsonParserTest extends TestCase
     public static function arrays(): Generator
     {
         yield [[], '[]', 'simple empty array'];
+        yield [[], ' []', 'simple empty array'];
+        yield [[], '[] ', 'simple empty array'];
         yield [[], '[ ]', 'simple empty array'];
         yield [[[]], '[[]]', 'nested empty array'];
         yield [[1, 2, 3], '[1,2,3]', 'simple array'];
@@ -67,6 +69,8 @@ class JsonParserTest extends TestCase
     public static function objects(): Generator
     {
         yield [[], '{}', 'simple empty object'];
+        yield [[], ' {}', 'simple empty object'];
+        yield [[], '{} ', 'simple empty object'];
         yield [[], '{ }', 'simple empty object'];
         yield [['key' => 1], '{"key":1}', 'simple object'];
         yield [['a' => 1, 'b' => 2], '{"a":1, "b": 2}', 'simple object'];

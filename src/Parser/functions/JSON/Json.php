@@ -50,11 +50,12 @@ final readonly class Json
             )->map(static fn ($i) => array_merge(...array_values($i)));
         }));
 
-        $expression = choice(
+        $expression = self::optionalWhitespace()->chain(fn () => choice(
             $obj,
             $array,
             self::literal(),
-        );
+        ))
+        ;
 
         return $expression;
     }
