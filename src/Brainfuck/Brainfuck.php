@@ -19,12 +19,13 @@ use function verfriemelt\pp\Parser\functions\sequenceOf;
 final readonly class Brainfuck
 {
     /**
-     * @param non-empty-string $content
+     * @param non-empty-string      $content
+     * @param array<int,int<0,256>> $input
      */
-    public static function run(string $content): string
+    public static function run(string $content, array $input = []): string
     {
         $programm = static::build($content);
-        $machine = new Machine($programm);
+        $machine = new Machine($programm, $input);
         return $machine->run();
     }
 

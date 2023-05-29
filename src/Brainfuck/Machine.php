@@ -8,20 +8,26 @@ use RuntimeException;
 
 class Machine
 {
+    private Instruction $program;
+
+    /** @var array<int,int<0,256>> */
+    private array $input;
+
     /** @var array<int,int<0,256>> */
     private array $data = [0];
 
     private int $dataPointer = 0;
 
-    private Instruction $program;
-
+    private int $counter = 0;
     private string $output = '';
 
-    private int $counter = 0;
-
-    public function __construct(Instruction $program)
+    /**
+     * @param array<int,int<0,256>> $input
+     */
+    public function __construct(Instruction $program, array $input = [])
     {
         $this->program = $program;
+        $this->input = $input;
     }
 
     public function run(): string
@@ -60,6 +66,9 @@ class Machine
                     break;
                 case Instruction::PRINT:
                     $this->output .= chr($this->data[$this->dataPointer]);
+                    break;
+                case Instruction::READ:
+                    $this->data[$this->dataPointer] = \array_shift($this->input) ?? throw new RuntimeException('empty input');
                     break;
                 case Instruction::JUMP_FORWARD_IF_ZERO:
                     if ($this->data[$this->dataPointer] === 0) {

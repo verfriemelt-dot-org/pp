@@ -32,8 +32,16 @@ class BrainfuckTest extends TestCase
 
     public function test_hello_world(): void
     {
-        $programm = '++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.';
+        $program = '++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.';
 
-        static::assertSame("Hello World!\n", Brainfuck::run($programm));
+        static::assertSame("Hello World!\n", Brainfuck::run($program));
+    }
+
+    public function test_with_input(): void
+    {
+        $input = [ord('a')];
+        $program = ',.';
+
+        static::assertSame('a', Brainfuck::run($program, $input));
     }
 }
