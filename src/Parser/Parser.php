@@ -36,7 +36,7 @@ final readonly class Parser
                 return $state;
             }
 
-            return $state->result($callable($state->getResult()));
+            return $state->result($callable($state->getResult(), $state));
         });
     }
 

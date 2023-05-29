@@ -4,10 +4,14 @@
         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.1/phpunit.xsd"
         bootstrap="vendor/autoload.php"
         executionOrder="depends,defects"
+        stopOnWarning="true"
+        stopOnNotice="true"
         failOnWarning="true"
+        displayDetailsOnTestsThatTriggerWarnings="true"
+        displayDetailsOnTestsThatTriggerNotices="true"
         colors="true"
         cacheResult="false"
-        displayDetailsOnSkippedTests="false"
+        displayDetailsOnSkippedTests="true"
 >
   <testsuites>
     <testsuite name="default">

@@ -1,6 +1,6 @@
 <?php
 
-use verfriemelt\pp\Parser\functions\JSON\Json;
+use verfriemelt\pp\Parser\JSON\Json;
 
 require __DIR__ . '/../vendor/autoload.php';
 

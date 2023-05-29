@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace verfriemelt\pp\Parser\functions\JSON;
+namespace verfriemelt\pp\Parser\Json;
 
 use IntlChar;
 use verfriemelt\pp\Parser\Parser;

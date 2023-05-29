@@ -7,9 +7,9 @@ namespace tests\unit\Parser;
 use Generator;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use verfriemelt\pp\Parser\functions\JSON\Json;
-use verfriemelt\pp\Parser\ParserInput;
 use RuntimeException;
+use verfriemelt\pp\Parser\Json\Json;
+use verfriemelt\pp\Parser\ParserInput;
 
 class JsonParserTest extends TestCase
 {
