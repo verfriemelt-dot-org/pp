@@ -12,7 +12,7 @@ final class ParserStateTest extends TestCase
     public function test_create_instance(): void
     {
         $this->expectNotToPerformAssertions();
-        new ParserState();
+        $instance = new ParserState();
     }
 
     public function test_update_state(): void

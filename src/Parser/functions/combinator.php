@@ -92,7 +92,7 @@ function manyOne(Parser $parser): Parser
 
 function seperatedBy(Parser $seperator): Closure
 {
-    return static fn (Parser $value) => new Parser('seperatedBy', static function (ParserInputInterface $input, ParserState $state) use (&$value, &$seperator): ParserState {
+    return static fn(Parser $value) => new Parser('seperatedBy', static function (ParserInputInterface $input, ParserState $state) use (&$value, &$seperator): ParserState {
         $results = [];
 
         $currentState = $state;
@@ -122,11 +122,11 @@ function seperatedBy(Parser $seperator): Closure
 
 function between(Parser $left, Parser $right): Closure
 {
-    return static fn (Parser $between) => sequenceOf(
+    return static fn(Parser $between) => sequenceOf(
         $left,
         $between,
         $right,
-    )->map(fn ($r) => $r[1]);
+    )->map(fn($r) => $r[1]);
 }
 
 function lazy(Closure $lazy): Parser
@@ -138,17 +138,17 @@ function lazy(Closure $lazy): Parser
 
 function succeed(mixed $value): Parser
 {
-    return new Parser('succeed', static fn (ParserInput $input, ParserState $state): ParserState => $state->result($value));
+    return new Parser('succeed', static fn(ParserInput $input, ParserState $state): ParserState => $state->result($value));
 }
 
 function fail(string $msg): Parser
 {
-    return new Parser('fail', static fn (ParserInput $input, ParserState $state): ParserState => $state->error($msg));
+    return new Parser('fail', static fn(ParserInput $input, ParserState $state): ParserState => $state->error($msg));
 }
 
 function contextual(Closure $generator): Closure
 {
-    return static fn () => succeed(null)->chain(static function () use ($generator) {
+    return static fn() => succeed(null)->chain(static function () use ($generator) {
         $iterator = null;
 
         $step = static function ($nextValue = null) use (&$step, &$iterator, &$generator) {

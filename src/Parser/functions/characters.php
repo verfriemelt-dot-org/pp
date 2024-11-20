@@ -55,20 +55,20 @@ function digit(): Parser
  * @param non-empty-string[] $expectedCharacters
  */
 function punctuation(array $expectedCharacters = [
-        '!', '?', '.', ',', '/', '-',
-    ]): Parser
+    '!', '?', '.', ',', '/', '-',
+]): Parser
 {
-    return choice(...array_map(static fn ($_) => char($_), $expectedCharacters));
+    return choice(...array_map(static fn($_) => char($_), $expectedCharacters));
 }
 
 /**
  * @param non-empty-string[] $expectedCharacters
  */
 function space(array $expectedCharacters = [
-        ' ', "\n",
-    ]): Parser
+    ' ', "\n",
+]): Parser
 {
-    return choice(...array_map(static fn ($_) => char($_), $expectedCharacters));
+    return choice(...array_map(static fn($_) => char($_), $expectedCharacters));
 }
 
 function letters(): Parser

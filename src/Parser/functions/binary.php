@@ -74,10 +74,10 @@ function uint(int $n): Parser
 {
     return
             sequenceOf(...array_fill(1, $n, bit()))
-            ->map(static fn ($i) => bindec(implode('', $i)));
+            ->map(static fn($i) => bindec(implode('', $i)));
 }
 
 function rawString(string $string): Parser
 {
-    return sequenceOf(...array_map(static fn (string $c) => uint(8), str_split($string)));
+    return sequenceOf(...array_map(static fn(string $c) => uint(8), str_split($string)));
 }

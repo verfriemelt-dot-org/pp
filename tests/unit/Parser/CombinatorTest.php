@@ -19,14 +19,14 @@ class CombinatorTest extends TestCase
         static::assertFalse(not(char('x'))->run(new ParserInput('a'))->isError(), 'succeed for non-existant x');
 
         static::assertFalse(
-            not(char('a'))->chain(fn () => letters())->run(new ParserInput('xb'))->isError(),
-            'should match letters not starting with a'
+            not(char('a'))->chain(fn() => letters())->run(new ParserInput('xb'))->isError(),
+            'should match letters not starting with a',
         );
 
         static::assertSame(
             'xb',
-            not(char('a'))->chain(fn () => letters())->run(new ParserInput('xb'))->getResult(),
-            'not should not consume'
+            not(char('a'))->chain(fn() => letters())->run(new ParserInput('xb'))->getResult(),
+            'not should not consume',
         );
     }
 }

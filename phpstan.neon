@@ -12,7 +12,8 @@ parameters:
     - src
     - tests
 
-  checkMissingIterableValueType: false
+  ignoreErrors:
+    - identifier: arrayFilter.strict
 
   parallel:
     processTimeout: 30.0

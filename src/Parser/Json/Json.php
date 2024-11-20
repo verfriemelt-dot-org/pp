@@ -33,24 +33,24 @@ final readonly class Json
     {
         $array = between(char('['), char(']'))(lazy(static function () use (&$expression) {
             return many(
-                self::optionalWhitespace()->chain(fn () => seperatedBy(char(','))($expression))
-            )->map(static fn ($i) => $i[0] ?? []);
+                self::optionalWhitespace()->chain(fn() => seperatedBy(char(','))($expression)),
+            )->map(static fn($i) => $i[0] ?? []);
         }));
 
         $obj = between(char('{'), char('}'))(lazy(static function () use (&$expression) {
             return many(
-                self::optionalWhitespace()->chain(fn () => seperatedBy(char(','))(
+                self::optionalWhitespace()->chain(fn() => seperatedBy(char(','))(
                     sequenceOf(
-                        self::optionalWhitespace()->chain(fn () => self::strings()),
-                        self::optionalWhitespace()->chain(fn () => char(':')),
-                        self::optionalWhitespace()->chain(fn () => $expression),
+                        self::optionalWhitespace()->chain(fn() => self::strings()),
+                        self::optionalWhitespace()->chain(fn() => char(':')),
+                        self::optionalWhitespace()->chain(fn() => $expression),
                         self::optionalWhitespace(),
-                    )->map(static fn ($i) => [$i[0] => $i[2]])
-                )->map(static fn ($i) => array_merge(...array_values($i))))
-            )->map(static fn ($i) => array_merge(...array_values($i)));
+                    )->map(static fn($i) => [$i[0] => $i[2]])
+                )->map(static fn($i) => array_merge(...array_values($i)))),
+            )->map(static fn($i) => array_merge(...array_values($i)));
         }));
 
-        $expression = self::optionalWhitespace()->chain(fn () => choice(
+        $expression = self::optionalWhitespace()->chain(fn() => choice(
             $obj,
             $array,
             self::literal(),
@@ -66,7 +66,7 @@ final readonly class Json
             sequenceOf(
                 optional(choice(char('+'), char('-'))),
                 numbers(),
-            )->map(static fn ($i) => (int) \implode('', array_filter($i)));
+            )->map(static fn($i) => (int) \implode('', array_filter($i)));
     }
 
     public static function float(): Parser
@@ -77,17 +77,17 @@ final readonly class Json
             choice(
                 sequenceOf(
                     char('.'),
-                    numbers()
-                )->map(static fn ($i) => \implode('', $i)),
+                    numbers(),
+                )->map(static fn($i) => \implode('', $i)),
                 optional(
                     sequenceOf(
                         char('e'),
                         choice(char('+'), char('-')),
                         numbers(),
-                    )->map(fn ($i) => \implode('', $i))
-                )
-            )
-        )->map(static fn ($i): float => (float) \implode('', array_filter($i)))
+                    )->map(fn($i) => \implode('', $i)),
+                ),
+            ),
+        )->map(static fn($i): float => (float) \implode('', array_filter($i)))
         ;
     }
 
@@ -100,35 +100,35 @@ final readonly class Json
     {
         return choice(
             caseInsensitiveString('true'),
-            caseInsensitiveString('false')
-        )->map(fn (string $i): bool => \strtolower($i) === 'true');
+            caseInsensitiveString('false'),
+        )->map(fn(string $i): bool => \strtolower($i) === 'true');
     }
 
     public static function null(): Parser
     {
-        return caseInsensitiveString('null')->map(fn (string $_): null => null);
+        return caseInsensitiveString('null')->map(fn(string $_): null => null);
     }
 
     public static function strings(): Parser
     {
         return between(
             char('"'),
-            char('"')
+            char('"'),
         )(
             many(
                 choice(
                     sequenceOf(
                         char('\\'),
-                        char('\\')
-                    )->map(fn (array $_): string => '\\'),
+                        char('\\'),
+                    )->map(fn(array $_): string => '\\'),
                     sequenceOf(
                         char('\\'),
-                        char('"')
-                    )->map(fn (array $_): string => '"'),
-                    regexp('^\\\\u[a-fA-F0-9]{4}')->map(static fn (string $i): string => IntlChar::chr((int) \hexdec(\substr($i, 2, 4)))),
-                    regexp('^[^"]')
-                )
-            )->map(fn (array $i) => implode('', $i))
+                        char('"'),
+                    )->map(fn(array $_): string => '"'),
+                    regexp('^\\\\u[a-fA-F0-9]{4}')->map(static fn(string $i): string => IntlChar::chr((int) \hexdec(\substr($i, 2, 4)))),
+                    regexp('^[^"]'),
+                ),
+            )->map(fn(array $i) => implode('', $i))
         );
     }
 

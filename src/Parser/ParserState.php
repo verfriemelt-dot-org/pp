@@ -11,8 +11,7 @@ final readonly class ParserState
         private mixed $result = null,
         private bool $isError = false,
         private ?string $error = null,
-    ) {
-    }
+    ) {}
 
     public function getIndex(): int
     {

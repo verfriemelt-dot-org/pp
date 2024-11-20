@@ -80,12 +80,12 @@ class SimpleParserTest extends TestCase
 
     public function test_optional_result(): void
     {
-        $parser = sequenceOf(optional(char('-')), numbers())->map(fn ($i) => implode('', $i));
+        $parser = sequenceOf(optional(char('-')), numbers())->map(fn($i) => implode('', $i));
 
         static::assertSame('1', $parser->run(new ParserInput('1'))->getResult());
         static::assertSame('-1', $parser->run(new ParserInput('-1'))->getResult());
 
-        $parser = sequenceOf(char('a'), optional(char('-')), numbers())->map(fn ($i) => implode('', $i));
+        $parser = sequenceOf(char('a'), optional(char('-')), numbers())->map(fn($i) => implode('', $i));
 
         static::assertSame('a-1', $parser->run(new ParserInput('a-1'))->getResult());
         static::assertSame('a1', $parser->run(new ParserInput('a1'))->getResult());
@@ -93,7 +93,7 @@ class SimpleParserTest extends TestCase
 
     public function test_regex(): void
     {
-        $parser = regexp('\\\\u[A-F0-9]{4}')->map(fn (string $i): string => IntlChar::chr((int) \hexdec(\substr($i, 2, 4))));
+        $parser = regexp('\\\\u[A-F0-9]{4}')->map(fn(string $i): string => IntlChar::chr((int) \hexdec(\substr($i, 2, 4))));
         $result = $parser->run(new ParserInput('\u0022'))->getResult();
 
         static::assertSame('"', $result);

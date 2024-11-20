@@ -71,10 +71,10 @@ final readonly class Brainfuck
     {
         $loop = lazy(static function () use (&$expression): Parser {
             return sequenceOf(
-                char('[')->map(static fn (string $i): Instruction => Instruction::from($i)),
+                char('[')->map(static fn(string $i): Instruction => Instruction::from($i)),
                 /** @phpstan-ignore-next-line */
                 manyOne($expression),
-                char(']')->map(static fn (string $i): Instruction => Instruction::from($i)),
+                char(']')->map(static fn(string $i): Instruction => Instruction::from($i)),
             )->map(function (array $program): Instruction {
                 $loopedExpressions = $program[1];
 
@@ -91,13 +91,13 @@ final readonly class Brainfuck
         });
 
         $expression = choice(
-            char('+')->map(static fn (string $i): Instruction => Instruction::from($i)),
-            char('-')->map(static fn (string $i): Instruction => Instruction::from($i)),
-            char(',')->map(static fn (string $i): Instruction => Instruction::from($i)),
-            char('<')->map(static fn (string $i): Instruction => Instruction::from($i)),
-            char('>')->map(static fn (string $i): Instruction => Instruction::from($i)),
-            char('.')->map(static fn (string $i): Instruction => Instruction::from($i)),
-            $loop
+            char('+')->map(static fn(string $i): Instruction => Instruction::from($i)),
+            char('-')->map(static fn(string $i): Instruction => Instruction::from($i)),
+            char(',')->map(static fn(string $i): Instruction => Instruction::from($i)),
+            char('<')->map(static fn(string $i): Instruction => Instruction::from($i)),
+            char('>')->map(static fn(string $i): Instruction => Instruction::from($i)),
+            char('.')->map(static fn(string $i): Instruction => Instruction::from($i)),
+            $loop,
         );
 
         return many($expression)->map(function (array $program): Instruction {

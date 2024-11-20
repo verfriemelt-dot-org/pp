@@ -20,7 +20,7 @@ final readonly class Parser
         $this->parser = $parser;
     }
 
-    public function run(ParserInputInterface $input, ParserState $state = null): ParserState
+    public function run(ParserInputInterface $input, ?ParserState $state = null): ParserState
     {
         return ($this->parser)($input, $state ?? new ParserState());
     }
